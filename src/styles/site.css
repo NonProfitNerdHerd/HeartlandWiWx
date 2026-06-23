@@ -6,7 +6,7 @@ nav {
 	max-width: 1000px;
 	margin: 0 auto;
 	padding: 24px 24px 0;
-	border-bottom: 1px solid #334155;
+	border-bottom: 1px solid #222;
 }
 
 nav a {
@@ -21,9 +21,15 @@ nav a.active {
 }
 
 nav .brand {
-	font-weight: bold;
-	color: white;
+	display: flex;
+	align-items: center;
 	margin-right: auto;
+}
+
+nav .brand img {
+	display: block;
+	height: 72px;
+	width: auto;
 }
 
 main {
@@ -82,9 +88,10 @@ main a.button {
 }
 
 .gallery-item {
-	background: #1e293b;
+	background: #111;
 	border-radius: 8px;
 	overflow: hidden;
+	border: 1px solid #222;
 }
 
 .gallery-image {
@@ -129,9 +136,9 @@ main a.button {
 .contact-form input,
 .contact-form textarea {
 	padding: 12px;
-	border: 1px solid #334155;
+	border: 1px solid #333;
 	border-radius: 6px;
-	background: #1e293b;
+	background: #111;
 	color: white;
 	font: inherit;
 }
@@ -163,5 +170,9 @@ main a.button {
 
 	h2 {
 		font-size: 26px;
+	}
+
+	nav .brand img {
+		height: 56px;
 	}
 }
