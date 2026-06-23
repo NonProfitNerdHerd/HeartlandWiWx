@@ -1,0 +1,21 @@
+---
+const currentPath = Astro.url.pathname;
+
+const links = [
+	{ href: '/', label: 'Home' },
+	{ href: '/about', label: 'About' },
+	{ href: '/gallery', label: 'Gallery' },
+	{ href: '/contact', label: 'Contact' },
+];
+---
+
+<nav>
+	<a class="brand" href="/">Heartland Chasers</a>
+	{
+		links.map(({ href, label }) => (
+			<a href={href} class:list={{ active: currentPath === href }}>
+				{label}
+			</a>
+		))
+	}
+</nav>
