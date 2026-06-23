@@ -1,54 +1,93 @@
 # HeartlandWiWx
 
-Welcome to the website of the Heartland Interceptors!
+Heartland Chasers storm-chasing site built with [Astro](https://astro.build) and [TinaCMS](https://tina.io/) for Git-backed content editing.
 
-Built with [Astro](https://astro.build).
-
-## Project Structure
+## Content structure
 
 ```text
-/
-├── public/
-│   └── favicon.svg
-├── src/
-│   ├── assets/
-│   ├── components/
-│   ├── layouts/
-│   └── pages/
-└── package.json
+content/
+├── pages/              # Site pages (Markdown)
+├── chase-reports/      # Chase report posts (Markdown)
+└── settings/
+    └── site.json       # Global site settings
 ```
+
+Dynamic routes:
+
+- `/` renders the page where `slug` is `home`
+- `/:slug` renders any page from `content/pages`
+- `/chase-reports` lists published chase reports
+- `/chase-reports/:slug` renders an individual chase report
+
+Navigation is built automatically from `content/pages` using `showInMenu`, `menuOrder`, and `menuLabel`.
 
 ## Commands
 
-| Command                   | Action                                      |
-| :------------------------ | :------------------------------------------ |
-| `npm install`             | Installs dependencies                       |
-| `npm run dev`             | Starts local dev server at `localhost:4321` |
-| `npm run build`           | Build your production site to `./dist/`       |
-| `npm run preview`         | Preview your build locally                  |
-| `npm run astro ...`       | Run CLI commands like `astro add`           |
-| `npm run astro -- --help` | Get help using the Astro CLI                |
+| Command | Action |
+| :------ | :----- |
+| `npm install` | Installs dependencies |
+| `npm run dev` | Starts Astro + Tina admin locally |
+| `npm run build` | Builds Tina admin + Astro site for production |
+| `npm run build:local` | Local build without Tina Cloud credentials |
+| `npm run preview` | Preview the production build |
+
+## Local development
+
+```bash
+npm install
+cp .env.example .env
+npm run dev
+```
+
+Then open:
+
+- Site: http://localhost:4321
+- Admin: http://localhost:4321/admin/index.html
+
+In local mode, Tina saves Markdown/JSON files directly in the repo without Tina Cloud.
+
+## Tina Cloud + GitHub editing (production admin)
+
+1. Push this repo to GitHub.
+2. Create a project at [app.tina.io](https://app.tina.io) and connect the GitHub repo.
+3. Run:
+
+```bash
+npx @tinacms/cli init backend
+```
+
+4. Copy the generated values into `.env` and Vercel environment variables.
+5. Commit `tina/tina-lock.json` if it changes.
+
+### Required Vercel environment variables
+
+| Variable | Purpose |
+| :------- | :------ |
+| `NEXT_PUBLIC_TINA_CLIENT_ID` | Tina Cloud client ID from app.tina.io |
+| `TINA_TOKEN` | Tina Cloud read token from app.tina.io |
+| `GITHUB_BRANCH` | Git branch Tina should commit to (usually `main`) |
+
+Vercel also provides `VERCEL_GIT_COMMIT_REF`, which Tina uses automatically when `GITHUB_BRANCH` is not set.
+
+After Tina saves content to GitHub, Vercel redeploys automatically from the new commit.
 
 ## Deploy to Vercel
 
-This is a static Astro site and works on Vercel with no extra adapter.
-
-### Git integration (recommended)
-
-1. Go to [vercel.com/new](https://vercel.com/new) and import the `NonProfitNerdHerd/HeartlandWiWx` GitHub repository.
-2. Vercel should auto-detect Astro with:
+1. Import the GitHub repository at [vercel.com/new](https://vercel.com/new)
+2. Set the environment variables above
+3. Use:
    - **Build Command:** `npm run build`
    - **Output Directory:** `dist`
-   - **Install Command:** `npm install`
-3. Click **Deploy**. Production deploys run from `main`; other branches get preview URLs.
+4. Deploy
 
-The root `vercel.json` keeps those settings explicit in the repo.
+The Tina admin UI is available at `/admin/index.html` on your deployed site.
 
-### CLI deployment
+## Creating new pages
 
-```bash
-npm i -g vercel
-vercel login
-vercel link
-vercel --prod
-```
+1. Open `/admin/index.html`
+2. Go to **Pages**
+3. Create a new page with a unique `slug`
+4. Set `showInMenu`, `menuOrder`, and `menuLabel` if it should appear in navigation
+5. Save
+
+The page becomes available at `/:slug` on the next deploy. Use `slug: home` for the homepage.

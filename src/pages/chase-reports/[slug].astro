@@ -1,0 +1,36 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import { getAllChaseReports, getChaseReportBySlug } from '../../lib/content';
+
+export function getStaticPaths() {
+	return getAllChaseReports().map((report) => ({
+		params: { slug: report.slug },
+	}));
+}
+
+const slug = Astro.params.slug ?? '';
+const report = getChaseReportBySlug(slug);
+
+if (!report) {
+	return new Response('Not Found', { status: 404 });
+}
+---
+
+<Layout title={`${report.title} | Heartland Chasers`} description={report.excerpt}>
+	<Nav slot="nav" />
+
+	<main>
+		<article class="report-detail">
+			<p class="report-meta">{new Date(report.date).toLocaleDateString()}</p>
+			<h1>{report.title}</h1>
+			{
+				report.featuredImage ? (
+					<img class="report-featured-image" src={report.featuredImage} alt={report.title} />
+				) : null
+			}
+			<div class="cms-content" set:html={report.html} />
+			<a class="button" href="/chase-reports">Back to Chase Reports</a>
+		</article>
+	</main>
+</Layout>
