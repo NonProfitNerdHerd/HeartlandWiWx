@@ -48,16 +48,23 @@ In local mode, Tina saves Markdown/JSON files directly in the repo without Tina 
 
 ## Tina Cloud + GitHub editing (production admin)
 
-1. Push this repo to GitHub.
-2. Create a project at [app.tina.io](https://app.tina.io) and connect the GitHub repo.
-3. Run:
+See **[docs/TINA_SETUP.md](docs/TINA_SETUP.md)** for the full step-by-step guide.
+
+**Important:** Do not run `npx @tinacms/cli init`. The schema already exists in `tina/config.ts`.
+
+Quick version:
+
+1. Pull latest `main` from GitHub
+2. Create a project at [app.tina.io](https://app.tina.io) and connect this repo
+3. Create a `.env` file with `NEXT_PUBLIC_TINA_CLIENT_ID`, `TINA_TOKEN`, and `GITHUB_BRANCH=main`
+4. Add the same values to Vercel environment variables
+5. Redeploy
 
 ```bash
-npx @tinacms/cli init backend
+npm run dev
 ```
 
-4. Copy the generated values into `.env` and Vercel environment variables.
-5. Commit `tina/tina-lock.json` if it changes.
+Admin: http://localhost:4321/admin/index.html
 
 ### Required Vercel environment variables
 
