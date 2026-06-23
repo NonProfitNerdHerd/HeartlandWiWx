@@ -28,8 +28,9 @@ nav .brand {
 
 nav .brand img {
 	display: block;
-	height: 72px;
 	width: auto;
+	height: auto;
+	max-width: 320px;
 }
 
 main {
@@ -173,6 +174,6 @@ main a.button {
 	}
 
 	nav .brand img {
-		height: 56px;
+		max-width: 240px;
 	}
 }
