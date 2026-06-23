@@ -1,12 +1,8 @@
 ---
-const currentPath = Astro.url.pathname;
+import { getMenuPages, getPageHref } from '../lib/content';
 
-const links = [
-	{ href: '/', label: 'Home' },
-	{ href: '/about', label: 'About' },
-	{ href: '/gallery', label: 'Gallery' },
-	{ href: '/contact', label: 'Contact' },
-];
+const currentPath = Astro.url.pathname;
+const menuPages = getMenuPages();
 ---
 
 <nav>
@@ -14,10 +10,18 @@ const links = [
 		<img src="/logo.png" alt="Heartland Intercept - Severe Weather Chasing" />
 	</a>
 	{
-		links.map(({ href, label }) => (
-			<a href={href} class:list={{ active: currentPath === href }}>
-				{label}
-			</a>
-		))
+		menuPages.map((page) => {
+			const href = getPageHref(page.slug);
+			const isActive =
+				currentPath === href ||
+				(href !== '/' && currentPath.startsWith(`${href}/`)) ||
+				(page.slug === 'chase-reports' && currentPath.startsWith('/chase-reports'));
+
+			return (
+				<a href={href} class:list={{ active: isActive }}>
+					{page.menuLabel || page.title}
+				</a>
+			);
+		})
 	}
 </nav>

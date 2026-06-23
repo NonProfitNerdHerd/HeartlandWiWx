@@ -1,0 +1,131 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import matter from 'gray-matter';
+import { marked } from 'marked';
+
+const contentRoot = path.join(process.cwd(), 'content');
+const RESERVED_PAGE_SLUGS = new Set(['home', 'chase-reports']);
+
+marked.setOptions({ gfm: true, breaks: true });
+
+export interface PageFrontmatter {
+	title: string;
+	slug: string;
+	menuLabel?: string;
+	showInMenu?: boolean;
+	menuOrder?: number;
+	seoTitle?: string;
+	seoDescription?: string;
+}
+
+export interface Page extends PageFrontmatter {
+	body: string;
+	html: string;
+	filename: string;
+}
+
+export interface ChaseReportFrontmatter {
+	title: string;
+	slug: string;
+	date: string;
+	excerpt?: string;
+	featuredImage?: string;
+	status: 'draft' | 'published';
+}
+
+export interface ChaseReport extends ChaseReportFrontmatter {
+	body: string;
+	html: string;
+	filename: string;
+}
+
+export interface SiteSettings {
+	siteTitle: string;
+	tagline?: string;
+	youtubeUrl?: string;
+	xUrl?: string;
+	supportUrl?: string;
+	liveStreamEmbedUrl?: string;
+}
+
+function readMarkdownFiles<T>(directory: string): Array<{ data: T; body: string; filename: string }> {
+	if (!fs.existsSync(directory)) {
+		return [];
+	}
+
+	return fs
+		.readdirSync(directory)
+		.filter((file) => file.endsWith('.md'))
+		.map((file) => {
+			const raw = fs.readFileSync(path.join(directory, file), 'utf-8');
+			const { data, content } = matter(raw);
+			return {
+				data: data as T,
+				body: content.trim(),
+				filename: file.replace(/\.md$/, ''),
+			};
+		});
+}
+
+function toHtml(body: string): string {
+	return marked.parse(body) as string;
+}
+
+export function getAllPages(): Page[] {
+	return readMarkdownFiles<PageFrontmatter>(path.join(contentRoot, 'pages')).map(({ data, body, filename }) => {
+		const slug = data.slug || filename;
+		return {
+			...data,
+			slug,
+			body,
+			html: toHtml(body),
+			filename,
+		};
+	});
+}
+
+export function getPageBySlug(slug: string): Page | undefined {
+	return getAllPages().find((page) => page.slug === slug);
+}
+
+export function getRoutablePages(): Page[] {
+	return getAllPages().filter((page) => !RESERVED_PAGE_SLUGS.has(page.slug));
+}
+
+export function getMenuPages(): Page[] {
+	return getAllPages()
+		.filter((page) => page.showInMenu)
+		.sort((a, b) => (a.menuOrder ?? 999) - (b.menuOrder ?? 999));
+}
+
+export function getPageHref(slug: string): string {
+	if (slug === 'home') return '/';
+	if (slug === 'chase-reports') return '/chase-reports';
+	return `/${slug}`;
+}
+
+export function getAllChaseReports(includeDrafts = false): ChaseReport[] {
+	return readMarkdownFiles<ChaseReportFrontmatter>(path.join(contentRoot, 'chase-reports'))
+		.map(({ data, body, filename }) => {
+			const slug = data.slug || filename;
+			return {
+				...data,
+				slug,
+				body,
+				html: toHtml(body),
+				filename,
+			};
+		})
+		.filter((report) => includeDrafts || report.status === 'published')
+		.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+}
+
+export function getChaseReportBySlug(slug: string, includeDrafts = false): ChaseReport | undefined {
+	return getAllChaseReports(includeDrafts).find((report) => report.slug === slug);
+}
+
+export function getSiteSettings(): SiteSettings {
+	const settingsPath = path.join(contentRoot, 'settings/site.json');
+	const raw = fs.readFileSync(settingsPath, 'utf-8');
+	return JSON.parse(raw) as SiteSettings;
+}

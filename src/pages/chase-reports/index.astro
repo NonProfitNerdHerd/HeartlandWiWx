@@ -1,0 +1,42 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import { getAllChaseReports, getPageBySlug } from '../../lib/content';
+
+const intro = getPageBySlug('chase-reports');
+const reports = getAllChaseReports();
+---
+
+<Layout
+	title={intro?.seoTitle || 'Chase Reports | Heartland Chasers'}
+	description={intro?.seoDescription || 'Storm chase reports from Heartland Chasers.'}
+>
+	<Nav slot="nav" />
+
+	<main>
+		{intro ? <div class="cms-content" set:html={intro.html} /> : null}
+
+		<section>
+			<div class="report-list">
+				{
+					reports.length === 0 ? (
+						<p>No chase reports published yet. Check back after the next chase.</p>
+					) : (
+						reports.map((report) => (
+							<article class="report-card">
+								<h2>
+									<a href={`/chase-reports/${report.slug}`}>{report.title}</a>
+								</h2>
+								<p class="report-meta">{new Date(report.date).toLocaleDateString()}</p>
+								{report.excerpt ? <p>{report.excerpt}</p> : null}
+								<a class="button" href={`/chase-reports/${report.slug}`}>
+									Read Report
+								</a>
+							</article>
+						))
+					)
+				}
+			</div>
+		</section>
+	</main>
+</Layout>
