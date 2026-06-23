@@ -1,11 +1,40 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import Nav from '../components/Nav.astro';
 ---
 
-<Layout>
-	<Welcome />
+<Layout
+	title="Heartland Chasers | Midwest Storm Chasing"
+	description="Heartland Chasers follows Ike and Jess across the Midwest documenting severe weather, storm chasing, and community stories."
+>
+	<Nav slot="nav" />
+
+	<main>
+		<section>
+			<h1>Heartland Chasers</h1>
+			<p>Storm chasing across Wisconsin, Minnesota, Iowa, Illinois, Indiana, and the Dakotas.</p>
+			<a class="button" href="/live">Watch Live</a>
+			<a class="button" href="/chase-reports">Chase Reports</a>
+		</section>
+
+		<section>
+			<h2>About Us</h2>
+			<p>
+				Heartland Chasers follows Ike and Jess as they travel the Midwest documenting severe weather,
+				learning the craft of storm chasing, and sharing the stories behind the storms.
+			</p>
+			<a class="button" href="/about">Learn More</a>
+		</section>
+
+		<section>
+			<h2>Live Stream</h2>
+			<p>When we are chasing, our live stream will appear here.</p>
+		</section>
+
+		<section>
+			<h2>Latest Chase Reports</h2>
+			<p>Reports, photos, radar notes, and lessons learned from the road.</p>
+			<a class="button" href="/gallery">View Gallery</a>
+		</section>
+	</main>
 </Layout>

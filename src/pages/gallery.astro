@@ -1,0 +1,73 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+
+const galleryItems = [
+	{
+		title: 'Supercell near the Iowa border',
+		description: 'Rotating updraft and dramatic structure during a late-spring chase.',
+	},
+	{
+		title: 'Shelf cloud over southern Wisconsin',
+		description: 'Leading edge of a severe thunderstorm moving through the heartland.',
+	},
+	{
+		title: 'Lightning over the Minnesota prairie',
+		description: 'Nighttime bolts captured after a long day on the road.',
+	},
+	{
+		title: 'Wall cloud in central Illinois',
+		description: 'Low-level rotation beneath a developing supercell.',
+	},
+	{
+		title: 'Post-storm light in the Dakotas',
+		description: 'Calm skies and color after the storm passed to the east.',
+	},
+	{
+		title: 'Roadside radar check',
+		description: 'Planning the next move with updated data and a clear escape route.',
+	},
+];
+---
+
+<Layout
+	title="Gallery | Heartland Chasers"
+	description="Photos and moments from Heartland Chasers storm chases across the Midwest."
+>
+	<Nav slot="nav" />
+
+	<main>
+		<section>
+			<h1>Chase Gallery</h1>
+			<p>
+				Photos from the road — structure, skies, and the moments that make chasing worth the miles.
+				New images will be added after each chase.
+			</p>
+		</section>
+
+		<section>
+			<div class="gallery-grid">
+				{
+					galleryItems.map((item) => (
+						<article class="gallery-item">
+							<div class="gallery-image">Photo coming soon</div>
+							<div class="gallery-caption">
+								<h3>{item.title}</h3>
+								<p>{item.description}</p>
+							</div>
+						</article>
+					))
+				}
+			</div>
+		</section>
+
+		<section>
+			<h2>Want to see more?</h2>
+			<p>
+				Follow our live streams during active chases or check back here as we add new photos from
+				recent trips.
+			</p>
+			<a class="button" href="/contact">Get in Touch</a>
+		</section>
+	</main>
+</Layout>

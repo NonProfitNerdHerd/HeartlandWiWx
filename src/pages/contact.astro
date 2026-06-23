@@ -1,0 +1,64 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+---
+
+<Layout
+	title="Contact | Heartland Chasers"
+	description="Get in touch with Heartland Chasers for questions, collaborations, or storm chasing updates."
+>
+	<Nav slot="nav" />
+
+	<main>
+		<section>
+			<h1>Contact Us</h1>
+			<p>
+				Have a question, chase tip, or collaboration idea? We would love to hear from you. Reach out
+				by email or through the form below.
+			</p>
+		</section>
+
+		<section>
+			<h2>Direct Contact</h2>
+			<div class="contact-links">
+				<a href="mailto:hello@heartlandchasers.com">hello@heartlandchasers.com</a>
+			</div>
+			<p>
+				For media inquiries, community partnerships, or general questions, email us and we will get
+				back to you as soon as we can.
+			</p>
+		</section>
+
+		<section>
+			<h2>Send a Message</h2>
+			<form class="contact-form" action="mailto:hello@heartlandchasers.com" method="post" enctype="text/plain">
+				<label>
+					Name
+					<input type="text" name="name" required />
+				</label>
+				<label>
+					Email
+					<input type="email" name="email" required />
+				</label>
+				<label>
+					Message
+					<textarea name="message" required></textarea>
+				</label>
+				<button class="button" type="submit">Send Message</button>
+			</form>
+			<p>
+				This form opens your email app to send a message. A hosted contact form can be added later if
+				you prefer submissions without email.
+			</p>
+		</section>
+
+		<section>
+			<h2>Follow the Chase</h2>
+			<p>
+				When we are active, live streams and updates will be shared from the homepage and social
+				channels. Check back during severe weather season across the Midwest.
+			</p>
+			<a class="button" href="/">Back to Home</a>
+		</section>
+	</main>
+</Layout>
