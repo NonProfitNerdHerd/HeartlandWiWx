@@ -2,9 +2,10 @@
 export const prerender = false;
 
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { listPages } from '../../../lib/pages';
+import { listPageDocuments } from '../../../lib/page-document';
+import { ADMIN_ONLY_PAGE_SLUGS } from '../../../lib/content';
 
-const pages = await listPages();
+const pages = await listPageDocuments(ADMIN_ONLY_PAGE_SLUGS);
 ---
 
 <AdminLayout title="Pages" activeTab="pages">
@@ -34,8 +35,8 @@ const pages = await listPages();
 							<td>{page.slug}</td>
 							<td>{page.updatedAt}</td>
 							<td>
-								<span class:list={['admin-badge', page.published ? 'published' : 'draft']}>
-									{page.published ? 'Published' : 'Draft'}
+								<span class:list={['admin-badge', page.draft ? 'draft' : page.published ? 'published' : 'draft']}>
+									{page.draft ? 'Draft' : page.published ? 'Published' : 'Draft'}
 								</span>
 							</td>
 							<td>

@@ -1,4 +1,4 @@
-import { BLOG_CONTENT_DIR } from './content';
+import { BLOG_CONTENT_DIR } from './constants';
 import { createContentService, type ContentListItem, type ContentRecord } from './cms';
 
 export interface BlogRecord extends ContentRecord {

@@ -1,0 +1,9 @@
+{
+  "items": [
+    { "id": "home", "label": "Home", "href": "/" },
+    { "id": "about", "label": "About", "href": "/about" },
+    { "id": "gallery", "label": "Gallery", "href": "/gallery" },
+    { "id": "contact", "label": "Contact", "href": "/contact" },
+    { "id": "chase-reports", "label": "Chase Reports", "href": "/chase-reports" }
+  ]
+}

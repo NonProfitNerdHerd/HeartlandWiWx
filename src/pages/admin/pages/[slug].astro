@@ -2,106 +2,25 @@
 export const prerender = false;
 
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { getPage } from '../../../lib/pages';
+import PageEditor from '../../../components/admin/PageEditor';
+import { getPageDocument } from '../../../lib/page-document';
+import { getGlobalBlocks } from '../../../lib/global-blocks';
 
 const slug = Astro.params.slug ?? '';
-const page = await getPage(slug);
+const page = await getPageDocument(slug);
+const globalBlocks = await getGlobalBlocks();
 
 if (!page) {
 	return Astro.redirect('/admin/pages');
 }
+
+const globalBlockOptions = globalBlocks.config.blocks.map((b) => ({ id: b.id, name: b.name }));
 ---
 
-<AdminLayout title={`Edit ${page.title}`} activeTab="pages">
-	<h1>Edit Page</h1>
-	<p class="admin-help">
-		Editing <strong>{page.slug}</strong>. Saving commits to GitHub; the live site updates after Vercel redeploys.
-	</p>
-
-	<form id="page-form" class="admin-form" data-original-slug={page.slug}>
-		<label>
-			Title
-			<input type="text" name="title" value={page.title} required />
-		</label>
-		<label>
-			Slug
-			<input type="text" name="slug" value={page.slug} pattern="[a-z0-9]+(-[a-z0-9]+)*" required />
-		</label>
-		<label>
-			SEO Title
-			<input type="text" name="seoTitle" value={page.seoTitle} />
-		</label>
-		<label>
-			Meta Description
-			<input type="text" name="description" value={page.description} />
-		</label>
-		<label class="admin-checkbox">
-			<input type="checkbox" name="published" checked={page.published} />
-			Published
-		</label>
-		<label>
-			Body (Markdown)
-			<textarea name="body">{page.body}</textarea>
-		</label>
-		<div id="form-message" hidden></div>
-		<div class="admin-actions">
-			<button class="admin-button" type="submit">Save Page</button>
-			{
-				page.published ? (
-					<a
-						class="admin-button-secondary"
-						href={page.slug === 'home' ? '/' : `/${page.slug}`}
-						target="_blank"
-						rel="noreferrer"
-					>
-						Preview
-					</a>
-				) : null
-			}
-			<a class="admin-button-secondary" href="/admin/pages">Back to Pages</a>
-		</div>
-	</form>
+<AdminLayout title={`Edit ${page.doc.meta.title}`} activeTab="pages" wide>
+	<PageEditor client:load initialDocument={page.doc} originalSlug={slug} globalBlockOptions={globalBlockOptions} />
 </AdminLayout>
 
-<script>
-	const form = document.getElementById('page-form') as HTMLFormElement;
-	const message = document.getElementById('form-message') as HTMLDivElement;
-	const originalSlug = form.dataset.originalSlug ?? '';
-
-	form.addEventListener('submit', async (event) => {
-		event.preventDefault();
-		message.hidden = true;
-
-		const formData = new FormData(form);
-		const payload = {
-			title: String(formData.get('title') ?? ''),
-			slug: String(formData.get('slug') ?? ''),
-			seoTitle: String(formData.get('seoTitle') ?? '') || String(formData.get('title') ?? ''),
-			description: String(formData.get('description') ?? ''),
-			body: String(formData.get('body') ?? ''),
-			published: formData.get('published') === 'on',
-		};
-
-		const response = await fetch(`/api/pages/${encodeURIComponent(originalSlug)}`, {
-			method: 'PUT',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(payload),
-		});
-
-		const result = await response.json();
-		if (!response.ok) {
-			message.textContent = result.error || 'Failed to save page.';
-			message.className = 'admin-message error';
-			message.hidden = false;
-			return;
-		}
-
-		message.textContent = 'Page saved. Vercel will redeploy shortly with the updated content.';
-		message.className = 'admin-message success';
-		message.hidden = false;
-
-		if (result.slug !== originalSlug) {
-			window.location.href = `/admin/pages/${result.slug}`;
-		}
-	});
-</script>
+<style is:global>
+	@import '../../../styles/builder.css';
+</style>

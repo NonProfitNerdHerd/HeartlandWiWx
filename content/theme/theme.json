@@ -1,0 +1,34 @@
+{
+  "colors": {
+    "primary": "#2563eb",
+    "secondary": "#1e293b",
+    "accent": "#f59e0b",
+    "background": "#000000",
+    "surface": "#111111",
+    "text": "#ffffff",
+    "mutedText": "#a3a3a3",
+    "warning": "#f59e0b",
+    "danger": "#ef4444",
+    "success": "#22c55e",
+    "info": "#3b82f6"
+  },
+  "typography": {
+    "heading": { "fontFamily": "Inter", "fontWeight": "700", "letterSpacing": "-0.02em", "lineHeight": "1.2", "sizeDesktop": "2.5rem", "sizeTablet": "2rem", "sizeMobile": "1.75rem" },
+    "body": { "fontFamily": "Inter", "fontWeight": "400", "letterSpacing": "0", "lineHeight": "1.6", "sizeDesktop": "1rem", "sizeTablet": "1rem", "sizeMobile": "1rem" },
+    "button": { "fontFamily": "Inter", "fontWeight": "600", "letterSpacing": "0", "lineHeight": "1", "sizeDesktop": "0.95rem", "sizeTablet": "0.95rem", "sizeMobile": "0.9rem" },
+    "navigation": { "fontFamily": "Inter", "fontWeight": "500", "letterSpacing": "0", "lineHeight": "1", "sizeDesktop": "0.95rem", "sizeTablet": "0.95rem", "sizeMobile": "0.9rem" },
+    "code": { "fontFamily": "JetBrains Mono", "fontWeight": "400", "letterSpacing": "0", "lineHeight": "1.5", "sizeDesktop": "0.875rem", "sizeTablet": "0.875rem", "sizeMobile": "0.875rem" }
+  },
+  "buttons": {
+    "primary": { "borderRadius": "6px", "paddingX": "1rem", "paddingY": "0.65rem", "fontWeight": "600", "hoverScale": 1.02, "transition": "0.2s ease", "shadow": "none" },
+    "secondary": { "borderRadius": "6px", "paddingX": "1rem", "paddingY": "0.65rem", "fontWeight": "600", "hoverScale": 1.02, "transition": "0.2s ease", "shadow": "none" },
+    "outline": { "borderRadius": "6px", "paddingX": "1rem", "paddingY": "0.65rem", "fontWeight": "600", "hoverScale": 1.02, "transition": "0.2s ease", "shadow": "none" },
+    "ghost": { "borderRadius": "6px", "paddingX": "1rem", "paddingY": "0.65rem", "fontWeight": "600", "hoverScale": 1.02, "transition": "0.2s ease", "shadow": "none" },
+    "danger": { "borderRadius": "6px", "paddingX": "1rem", "paddingY": "0.65rem", "fontWeight": "600", "hoverScale": 1.02, "transition": "0.2s ease", "shadow": "none" }
+  },
+  "spacing": { "sectionY": "4rem", "containerX": "1.5rem", "blockGap": "1.5rem" },
+  "borderRadius": { "sm": "4px", "md": "8px", "lg": "12px", "xl": "16px" },
+  "animations": { "enabled": true, "duration": "0.2s", "easing": "ease" },
+  "darkMode": { "enabled": true },
+  "globalCss": ""
+}

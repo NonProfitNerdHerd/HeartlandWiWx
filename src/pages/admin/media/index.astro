@@ -1,0 +1,77 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Media Library" activeTab="media">
+	<h1>Media Library</h1>
+	<p class="admin-help">Manage images, PDFs, videos, and documents. Add items by URL (upload to /public/uploads/ or external host).</p>
+	<label>New Media URL<input id="media-url" placeholder="/uploads/photo.jpg" /></label>
+	<label>Name<input id="media-name" /></label>
+	<label>Type
+		<select id="media-type">
+			<option value="image">Image</option>
+			<option value="pdf">PDF</option>
+			<option value="video">Video</option>
+			<option value="document">Document</option>
+		</select>
+	</label>
+	<label>Alt Text<input id="media-alt" /></label>
+	<label>Folder
+		<select id="media-folder"><option value="general">general</option><option value="gallery">gallery</option><option value="blog">blog</option></select>
+	</label>
+	<div class="admin-actions"><button class="admin-button" id="add-media">Add Media</button><button class="admin-button-secondary" id="save-media">Save Library</button></div>
+	<table class="admin-table" id="media-table"><thead><tr><th>Name</th><th>URL</th><th>Type</th><th>Folder</th><th></th></tr></thead><tbody></tbody></table>
+	<div id="media-message" hidden></div>
+</AdminLayout>
+
+<script>
+	let library = { items: [], folders: ['general', 'gallery', 'blog'] };
+	let sha = '';
+	const tbody = document.querySelector('#media-table tbody');
+	const message = document.getElementById('media-message');
+
+	function render() {
+		tbody.innerHTML = library.items.map((item, i) => `
+			<tr><td>${item.name}</td><td>${item.url}</td><td>${item.type}</td><td>${item.folder}</td>
+			<td><button type="button" data-remove="${i}">Remove</button></td></tr>
+		`).join('');
+		tbody.querySelectorAll('[data-remove]').forEach((btn) => {
+			btn.addEventListener('click', () => { library.items.splice(Number(btn.dataset.remove), 1); render(); });
+		});
+	}
+
+	async function load() {
+		const res = await fetch('/api/media');
+		const data = await res.json();
+		library = data.library;
+		sha = data.sha ?? '';
+		render();
+	}
+
+	document.getElementById('add-media')?.addEventListener('click', () => {
+		const url = document.getElementById('media-url').value.trim();
+		if (!url) return;
+		library.items.push({
+			id: crypto.randomUUID(),
+			name: document.getElementById('media-name').value || url.split('/').pop(),
+			url,
+			type: document.getElementById('media-type').value,
+			alt: document.getElementById('media-alt').value,
+			caption: '',
+			folder: document.getElementById('media-folder').value,
+			createdAt: new Date().toISOString().slice(0, 10),
+		});
+		render();
+	});
+
+	document.getElementById('save-media')?.addEventListener('click', async () => {
+		const res = await fetch('/api/media', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ library, sha }) });
+		const data = await res.json();
+		if (!res.ok) { message.textContent = data.error || 'Save failed'; message.className = 'admin-message error'; message.hidden = false; return; }
+		message.textContent = 'Media library saved.'; message.className = 'admin-message success'; message.hidden = false;
+		await load();
+	});
+
+	load();
+</script>

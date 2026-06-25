@@ -1,126 +1,68 @@
 # HeartlandWiWx
 
-Heartland Chasers storm-chasing site built with [Astro](https://astro.build) and a lightweight GitHub-backed CMS.
+GitHub-backed website builder for Heartland Chasers — Astro static site with a WordPress-style admin.
 
-Edit site content in the browser. Changes are saved as Markdown files in the repo and deployed automatically through Vercel.
+## Architecture
 
-## Content structure
+Four independent systems:
 
-```text
-src/content/pages/   # Site pages (home, about, contact, etc.)
-src/content/blog/    # Blog / chase report posts
-content/settings/
-  └── site.json      # Global site settings
-```
+| System | Storage | Admin |
+|--------|---------|-------|
+| **Content** | `src/content/pages/*.page.json` | `/admin/pages` |
+| **Blog** | `src/content/blog/*.md` | `/admin/blog` |
+| **Appearance** | `content/theme/theme.json` | `/admin/appearance` |
+| **Navigation** | `content/navigation/*.json` | `/admin/navigation` |
+| **Site Text** | `content/site-text/labels.json` | `/admin/site-text` |
+| **Global Blocks** | `content/global-blocks/blocks.json` | `/admin/global-blocks` |
+| **Media** | `content/media/library.json` | `/admin/media` |
 
-Dynamic routes:
+Pages store structured JSON blocks plus metadata (title, slug, SEO, template, author, dates, featured image).
 
-- `/` renders the page where `slug` is `home`
-- `/:slug` renders published pages from `src/content/pages`
-- `/chase-reports` lists published blog posts
-- `/chase-reports/:slug` renders an individual blog post
+## Admin
 
-Navigation is built automatically from `src/content/pages` using `showInMenu`, `menuOrder`, and `menuLabel`.
+Sign in at `/admin/login`.
 
-## Admin CMS
+**Content:** Pages, Blog Posts, Gallery, Media  
+**Site:** Appearance, Navigation, Site Text, Global Blocks
 
-Sign in at `/admin/login`, then use the tabs:
+### Page editor
 
-| Tab | Route | Purpose |
-| :-- | :---- | :------ |
-| **Pages** | `/admin/pages` | Home, About, Contact, and other site pages |
-| **Blog Posts** | `/admin/blog` | Chase reports and blog posts |
-| **Gallery** | `/admin/gallery` | Gallery page content |
-
-| Route | Purpose |
-| :---- | :------ |
-| `/admin/login` | Sign in |
-| `/admin/pages/new` | Create a page |
-| `/admin/pages/[slug]` | Edit a page (including `home`) |
-| `/admin/blog/new` | Create a blog post |
-| `/admin/blog/[slug]` | Edit a blog post |
-| `/admin/blog/landing` | Edit the `/chase-reports` intro page |
-
-When you save in admin:
-
-1. The server writes the Markdown file through the GitHub API
-2. GitHub receives a commit on your configured branch
-3. Vercel redeploys the site from that commit
-4. Public pages render the updated content
+- Full-width layout with **75% block editor** + **25% sticky metadata panel**
+- TipTap rich text for content blocks
+- 40+ block types in the picker (paragraph, hero, columns, CTA, global blocks, etc.)
+- Device preview: phone / tablet / desktop
+- Save draft or save & publish
+- Saves to GitHub → Vercel redeploys
 
 ## Commands
-
-| Command | Action |
-| :------ | :----- |
-| `npm install` | Installs dependencies |
-| `npm run dev` | Starts local dev server |
-| `npm run build` | Builds the site for production |
-
-## Local development
 
 ```bash
 npm install
 cp .env.example .env
-```
-
-Set at minimum:
-
-```env
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=your-local-password
-```
-
-```bash
 npm run dev
 ```
 
-- Site: http://localhost:4321
-- Admin: http://localhost:4321/admin/login
-
-### Local vs production storage
-
-- **Without `GITHUB_TOKEN`:** admin saves directly to `src/content/` on disk
-- **With GitHub env vars:** admin reads/writes through the GitHub API (required on Vercel)
-
-## Deploy to Vercel
-
-1. Import the GitHub repository at [vercel.com/new](https://vercel.com/new)
-2. Add the environment variables below
-3. Use **Build Command:** `npm run build` and **Output Directory:** `dist`
-4. Deploy
-
-### Required environment variables
+## Environment variables (Vercel)
 
 | Variable | Purpose |
-| :------- | :------ |
-| `GITHUB_TOKEN` | Personal Access Token with **Contents: Read and write** on this repo |
-| `GITHUB_OWNER` | GitHub org or username — copy exactly from `github.com/OWNER/REPO` |
-| `GITHUB_REPO` | Repository name — copy exactly from the URL (case matters) |
-| `GITHUB_BRANCH` | Branch to commit to (usually `main`) |
-| `ADMIN_USERNAME` | Admin login username |
-| `ADMIN_PASSWORD` | Admin login password |
+|----------|---------|
+| `GITHUB_TOKEN` | PAT with Contents read/write |
+| `GITHUB_OWNER` | e.g. `NonProfitNerdHerd` |
+| `GITHUB_REPO` | e.g. `HeartlandWiWx` (repo name only) |
+| `GITHUB_BRANCH` | `main` |
+| `ADMIN_USERNAME` | Admin login |
+| `ADMIN_PASSWORD` | Admin password |
 
-### GitHub token setup
+## Public routes
 
-1. GitHub profile → **Settings** → **Developer settings** → **Personal access tokens**
-2. Create a fine-grained token with **Contents: Read and write** on `HeartlandWiWx`
-3. Add it to Vercel as `GITHUB_TOKEN`
+- `/` — home page
+- `/:slug` — pages (block-rendered)
+- `/chase-reports` — blog index
+- `/chase-reports/:slug` — blog post
 
-The token is only used in server-side API routes and is never exposed to the browser.
+Theme colors/fonts apply via CSS variables from `content/theme/theme.json`.  
+Navigation loads from `content/navigation/header.json`.
 
-### Troubleshooting GitHub 404 errors
+## Migration
 
-If saves fail with `GitHub write failed (404)`:
-
-1. Confirm `GITHUB_OWNER` and `GITHUB_REPO` match your repo URL exactly
-2. Confirm `GITHUB_BRANCH` is `main` (or whichever branch Vercel deploys)
-3. Confirm the token has **Contents: Read and write** permission
-4. Confirm the token belongs to an account with push access to the repo
-5. Redeploy Vercel after changing environment variables
-
-## Security notes
-
-- Admin routes and APIs require login
-- Slugs are validated (`lowercase-with-hyphens` only)
-- File writes are restricted to `src/content/pages/` and `src/content/blog/`
-- Only content with `published: true` is shown on the public site
+Existing `.md` pages auto-migrate to blocks on first load. Saving in the new editor writes `{slug}.page.json`.

@@ -1,10 +1,16 @@
 ---
+import Layout from './Layout.astro';
+import { getThemeForBuild, themeToCssVariables } from '../lib/theme';
+import { getSiteTextForBuild } from '../lib/site-text';
+
 interface Props {
 	title: string;
 	description?: string;
 }
 
 const { title, description } = Astro.props;
+const themeCss = themeToCssVariables(getThemeForBuild());
+const siteText = getSiteTextForBuild();
 ---
 
 <!doctype html>
@@ -14,13 +20,21 @@ const { title, description } = Astro.props;
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 		{description && <meta name="description" content={description} />}
+		<style is:global set:html={themeCss}></style>
 	</head>
 	<body>
 		<slot name="nav" />
 		<slot />
+		<footer class="site-footer">
+			<p>{siteText.footerText}</p>
+			<p>{siteText.copyright}</p>
+		</footer>
 	</body>
 </html>
 
@@ -32,8 +46,15 @@ const { title, description } = Astro.props;
 		margin: 0;
 		width: 100%;
 		min-height: 100%;
-		font-family: Arial, sans-serif;
-		background: #000;
-		color: white;
+		font-family: var(--font-body, Arial, sans-serif);
+		background: var(--color-background, #000);
+		color: var(--color-text, #fff);
+	}
+
+	.site-footer {
+		padding: 2rem 1.5rem;
+		border-top: 1px solid #222;
+		color: var(--color-mutedText, #aaa);
+		text-align: center;
 	}
 </style>

@@ -1,0 +1,44 @@
+{
+  "blocks": [
+    {
+      "id": "support-us",
+      "name": "Support Us",
+      "description": "Donation / support CTA",
+      "updatedAt": "2026-06-25",
+      "blocks": [
+        {
+          "id": "support-cta",
+          "type": "ctaBanner",
+          "props": { "title": "Support Heartland Chasers", "buttonLabel": "Support Us", "href": "/contact" }
+        }
+      ]
+    },
+    {
+      "id": "newsletter-signup",
+      "name": "Newsletter Signup",
+      "description": "Email signup CTA",
+      "updatedAt": "2026-06-25",
+      "blocks": [
+        {
+          "id": "newsletter-cta",
+          "type": "callout",
+          "props": { "title": "Stay Updated", "variant": "info" },
+          "content": "<p>Subscribe for chase updates and forecast discussions.</p>"
+        }
+      ]
+    },
+    {
+      "id": "footer-cta",
+      "name": "Footer CTA",
+      "description": "Footer call to action",
+      "updatedAt": "2026-06-25",
+      "blocks": [
+        {
+          "id": "footer-cta-inner",
+          "type": "ctaBanner",
+          "props": { "title": "Follow the chase", "buttonLabel": "View Reports", "href": "/chase-reports" }
+        }
+      ]
+    }
+  ]
+}

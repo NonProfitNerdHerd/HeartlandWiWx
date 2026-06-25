@@ -3,11 +3,10 @@ export const prerender = false;
 
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { listBlogPosts } from '../../../lib/blog';
-import { getPage } from '../../../lib/pages';
+import { getPageDocument } from '../../../lib/page-document';
 import { BLOG_INDEX_PAGE_SLUG } from '../../../lib/content';
 
-const posts = await listBlogPosts();
-const landingPage = await getPage(BLOG_INDEX_PAGE_SLUG);
+const landingPage = await getPageDocument(BLOG_INDEX_PAGE_SLUG);
 ---
 
 <AdminLayout title="Blog Posts" activeTab="blog">
@@ -22,7 +21,7 @@ const landingPage = await getPage(BLOG_INDEX_PAGE_SLUG);
 		{
 			landingPage ? (
 				<p>
-					<strong>{landingPage.title}</strong> — last updated {landingPage.updatedAt}
+					<strong>{landingPage.doc.meta.title}</strong> — last updated {landingPage.doc.meta.updatedAt}
 					<a class="admin-inline-link" href="/admin/blog/landing">Edit landing page</a>
 				</p>
 			) : (

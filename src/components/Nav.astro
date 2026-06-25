@@ -1,8 +1,8 @@
 ---
-import { getMenuPages, getPageHref } from '../lib/content';
+import { getNavigationForBuild } from '../lib/navigation';
 
 const currentPath = Astro.url.pathname;
-const menuPages = getMenuPages();
+const headerNav = getNavigationForBuild('header');
 ---
 
 <nav>
@@ -10,16 +10,22 @@ const menuPages = getMenuPages();
 		<img src="/logo.png" alt="Heartland Intercept - Severe Weather Chasing" />
 	</a>
 	{
-		menuPages.map((page) => {
-			const href = getPageHref(page.slug);
+		headerNav.items.map((item) => {
+			const href = item.href;
 			const isActive =
 				currentPath === href ||
 				(href !== '/' && currentPath.startsWith(`${href}/`)) ||
-				(page.slug === 'chase-reports' && currentPath.startsWith('/chase-reports'));
+				(href === '/chase-reports' && currentPath.startsWith('/chase-reports'));
 
 			return (
-				<a href={href} class:list={{ active: isActive }}>
-					{page.menuLabel || page.title}
+				<a
+					href={href}
+					class:list={{ active: isActive }}
+					target={item.openInNewTab ? '_blank' : undefined}
+					rel={item.openInNewTab ? 'noreferrer' : undefined}
+				>
+					{item.icon ? <span class="nav-icon">{item.icon}</span> : null}
+					{item.label}
 				</a>
 			);
 		})

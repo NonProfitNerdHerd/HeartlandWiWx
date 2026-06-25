@@ -1,4 +1,4 @@
-import { ADMIN_ONLY_PAGE_SLUGS, PAGES_CONTENT_DIR } from './content';
+import { ADMIN_ONLY_PAGE_SLUGS, PAGES_CONTENT_DIR } from './constants';
 import { createContentService, type ContentListItem, type ContentRecord } from './cms';
 
 export type PageRecord = ContentRecord;
