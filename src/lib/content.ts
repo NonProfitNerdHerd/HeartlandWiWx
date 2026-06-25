@@ -1,39 +1,27 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { ADMIN_ONLY_PAGE_SLUGS, BLOG_CONTENT_DIR, BLOG_INDEX_PAGE_SLUG, PAGES_CONTENT_DIR } from './constants';
+import { getAllPageDocumentsForBuild, getPageDocumentForBuild } from './page-document';
+import { renderBlocks } from './blocks/render';
+import { globalBlocksMap, getGlobalBlocksForBuild } from './global-blocks';
 import matter from 'gray-matter';
 import { marked } from 'marked';
 
-const pagesRoot = path.join(process.cwd(), 'src/content/pages');
-const blogRoot = path.join(process.cwd(), 'src/content/blog');
-const contentRoot = path.join(process.cwd(), 'content');
-const RESERVED_PAGE_SLUGS = new Set(['home', 'chase-reports']);
+const blogRoot = path.join(process.cwd(), BLOG_CONTENT_DIR);
+const legacyBlogRoot = path.join(process.cwd(), 'content/chase-reports');
+const RESERVED_PAGE_SLUGS = new Set(['home', BLOG_INDEX_PAGE_SLUG]);
 
 marked.setOptions({ gfm: true, breaks: true });
 
-export const PAGES_CONTENT_DIR = 'src/content/pages';
-export const BLOG_CONTENT_DIR = 'src/content/blog';
-export const GALLERY_PAGE_SLUG = 'gallery';
-export const BLOG_INDEX_PAGE_SLUG = 'chase-reports';
-export const ADMIN_ONLY_PAGE_SLUGS = new Set([GALLERY_PAGE_SLUG, BLOG_INDEX_PAGE_SLUG]);
-
-export interface PageFrontmatter {
+export interface PageView {
 	title: string;
 	slug: string;
-	menuLabel?: string;
-	showInMenu?: boolean;
-	menuOrder?: number;
-	seoTitle?: string;
-	description?: string;
-	/** @deprecated use description */
-	seoDescription?: string;
-	published?: boolean;
-	updatedAt?: string;
-}
-
-export interface Page extends PageFrontmatter {
-	body: string;
+	seoTitle: string;
+	description: string;
 	html: string;
-	filename: string;
+	published: boolean;
+	template: string;
+	featuredImage: string;
 }
 
 export interface ChaseReportFrontmatter {
@@ -60,92 +48,91 @@ export interface SiteSettings {
 	liveStreamEmbedUrl?: string;
 }
 
-function readMarkdownFiles<T>(directory: string): Array<{ data: T; body: string; filename: string }> {
-	if (!fs.existsSync(directory)) {
-		return [];
-	}
+function pageDocToView(slug: string): PageView | undefined {
+	const doc = getPageDocumentForBuild(slug);
+	if (!doc || !doc.meta.published || doc.meta.draft) return undefined;
 
-	return fs
-		.readdirSync(directory)
-		.filter((file) => file.endsWith('.md'))
-		.map((file) => {
-			const raw = fs.readFileSync(path.join(directory, file), 'utf-8');
-			const { data, content } = matter(raw);
-			return {
-				data: data as T,
-				body: content.trim(),
-				filename: file.replace(/\.md$/, ''),
-			};
-		});
-}
+	const globalBlocks = globalBlocksMap(getGlobalBlocksForBuild());
+	const html = renderBlocks(doc.blocks, globalBlocks);
 
-function toHtml(body: string): string {
-	return marked.parse(body) as string;
-}
-
-function normalizePage(data: PageFrontmatter, body: string, filename: string): Page {
-	const slug = data.slug || filename;
-	const description = data.description || data.seoDescription;
 	return {
-		...data,
-		slug,
-		description,
-		body,
-		html: toHtml(body),
-		filename,
+		title: doc.meta.title,
+		slug: doc.meta.slug,
+		seoTitle: doc.meta.seoTitle || doc.meta.title,
+		description: doc.meta.description,
+		html,
+		published: doc.meta.published,
+		template: doc.meta.template,
+		featuredImage: doc.meta.featuredImage,
 	};
 }
 
-export function getAllPages(includeUnpublished = false): Page[] {
-	return readMarkdownFiles<PageFrontmatter>(pagesRoot)
-		.map(({ data, body, filename }) => normalizePage(data, body, filename))
-		.filter((page) => includeUnpublished || page.published !== false);
+export function getPageBySlug(slug: string): PageView | undefined {
+	return pageDocToView(slug);
 }
 
-export function getPageBySlug(slug: string, includeUnpublished = false): Page | undefined {
-	return getAllPages(includeUnpublished).find((page) => page.slug === slug);
+export function getRoutablePages(): PageView[] {
+	return getAllPageDocumentsForBuild(RESERVED_PAGE_SLUGS)
+		.map((doc) => pageDocToView(doc.meta.slug))
+		.filter((p): p is PageView => p !== undefined);
 }
 
-export function getRoutablePages(): Page[] {
-	return getAllPages().filter((page) => !RESERVED_PAGE_SLUGS.has(page.slug));
-}
-
-export function getMenuPages(): Page[] {
-	return getAllPages()
-		.filter((page) => page.showInMenu && page.published !== false)
-		.sort((a, b) => (a.menuOrder ?? 999) - (b.menuOrder ?? 999));
+export function getMenuPages(): Array<{ slug: string; menuLabel?: string; title: string; menuOrder?: number }> {
+	return getAllPageDocumentsForBuild()
+		.filter((doc) => doc.meta.showInMenu && doc.meta.published)
+		.sort((a, b) => (a.meta.menuOrder ?? 999) - (b.meta.menuOrder ?? 999))
+		.map((doc) => ({
+			slug: doc.meta.slug,
+			menuLabel: doc.meta.menuLabel,
+			title: doc.meta.title,
+			menuOrder: doc.meta.menuOrder,
+		}));
 }
 
 export function getPageHref(slug: string): string {
 	if (slug === 'home') return '/';
-	if (slug === 'chase-reports') return '/chase-reports';
+	if (slug === BLOG_INDEX_PAGE_SLUG) return '/chase-reports';
 	return `/${slug}`;
 }
 
 export function getAllChaseReports(includeDrafts = false): ChaseReport[] {
-	const blogDir = fs.existsSync(blogRoot) ? blogRoot : path.join(contentRoot, 'chase-reports');
+	const blogDir = fs.existsSync(blogRoot) ? blogRoot : legacyBlogRoot;
+	if (!fs.existsSync(blogDir)) return [];
 
-	return readMarkdownFiles<ChaseReportFrontmatter>(blogDir)
-		.map(({ data, body, filename }) => {
-			const slug = data.slug || filename;
+	return fs
+		.readdirSync(blogDir)
+		.filter((f) => f.endsWith('.md'))
+		.map((file) => {
+			const raw = fs.readFileSync(path.join(blogDir, file), 'utf-8');
+			const { data, content } = matter(raw);
+			const fm = data as ChaseReportFrontmatter;
+			const slug = fm.slug || file.replace('.md', '');
 			return {
-				...data,
+				...fm,
 				slug,
-				body,
-				html: toHtml(body),
-				filename,
+				body: content.trim(),
+				html: marked.parse(content.trim()) as string,
+				filename: file.replace('.md', ''),
 			};
 		})
-		.filter((report) => includeDrafts || report.status === 'published')
+		.filter((r) => includeDrafts || r.status === 'published')
 		.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 export function getChaseReportBySlug(slug: string, includeDrafts = false): ChaseReport | undefined {
-	return getAllChaseReports(includeDrafts).find((report) => report.slug === slug);
+	return getAllChaseReports(includeDrafts).find((r) => r.slug === slug);
 }
 
 export function getSiteSettings(): SiteSettings {
-	const settingsPath = path.join(contentRoot, 'settings/site.json');
+	const settingsPath = path.join(process.cwd(), 'content/settings/site.json');
 	const raw = fs.readFileSync(settingsPath, 'utf-8');
 	return JSON.parse(raw) as SiteSettings;
 }
+
+export {
+	ADMIN_ONLY_PAGE_SLUGS,
+	BLOG_CONTENT_DIR,
+	BLOG_INDEX_PAGE_SLUG,
+	GALLERY_PAGE_SLUG,
+	PAGES_CONTENT_DIR,
+} from './constants';

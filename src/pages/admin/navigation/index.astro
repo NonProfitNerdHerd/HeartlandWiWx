@@ -1,0 +1,51 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Navigation" activeTab="navigation">
+	<h1>Navigation</h1>
+	<p class="admin-help">Manage header, footer, and mobile menus. Drag order by editing JSON for now.</p>
+	<label>Menu
+		<select id="nav-menu">
+			<option value="header">Header Menu</option>
+			<option value="footer">Footer Menu</option>
+			<option value="mobile">Mobile Menu</option>
+		</select>
+	</label>
+	<label>Menu Items (JSON)
+		<textarea id="nav-json" rows="16"></textarea>
+	</label>
+	<div class="admin-actions"><button class="admin-button" id="save-nav">Save Navigation</button></div>
+	<div id="nav-message" hidden></div>
+</AdminLayout>
+
+<script>
+	let sha = '';
+	const menuSelect = document.getElementById('nav-menu');
+	const jsonArea = document.getElementById('nav-json');
+	const message = document.getElementById('nav-message');
+
+	async function load() {
+		const menu = menuSelect.value;
+		const res = await fetch(`/api/navigation?menu=${menu}`);
+		const data = await res.json();
+		sha = data.sha ?? '';
+		jsonArea.value = JSON.stringify(data.nav, null, 2);
+	}
+
+	menuSelect?.addEventListener('change', load);
+
+	document.getElementById('save-nav')?.addEventListener('click', async () => {
+		const menu = menuSelect.value;
+		let nav;
+		try { nav = JSON.parse(jsonArea.value); } catch { message.textContent = 'Invalid JSON'; message.className = 'admin-message error'; message.hidden = false; return; }
+		const res = await fetch(`/api/navigation?menu=${menu}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nav, sha }) });
+		const data = await res.json();
+		if (!res.ok) { message.textContent = data.error || 'Save failed'; message.className = 'admin-message error'; message.hidden = false; return; }
+		message.textContent = 'Navigation saved.'; message.className = 'admin-message success'; message.hidden = false;
+		await load();
+	});
+
+	load();
+</script>

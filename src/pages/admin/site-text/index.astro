@@ -1,0 +1,42 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Site Text" activeTab="site-text">
+	<h1>Global Site Text</h1>
+	<p class="admin-help">Reusable interface labels used across the site — not page content.</p>
+	<div id="site-text-fields" class="settings-grid"></div>
+	<div class="admin-actions"><button class="admin-button" id="save-site-text">Save Site Text</button></div>
+	<div id="site-text-message" hidden></div>
+</AdminLayout>
+
+<script>
+	const fields = document.getElementById('site-text-fields');
+	const message = document.getElementById('site-text-message');
+	let labels = {};
+	let sha = '';
+
+	async function load() {
+		const res = await fetch('/api/site-text');
+		const data = await res.json();
+		labels = data.labels;
+		sha = data.sha ?? '';
+		fields.innerHTML = Object.entries(labels).map(([key, value]) => `
+			<label>${key}<input data-key="${key}" value="${String(value).replace(/"/g, '&quot;')}" /></label>
+		`).join('');
+		fields.querySelectorAll('input').forEach((input) => {
+			input.addEventListener('input', (e) => { labels[e.target.dataset.key] = e.target.value; });
+		});
+	}
+
+	document.getElementById('save-site-text')?.addEventListener('click', async () => {
+		const res = await fetch('/api/site-text', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ labels, sha }) });
+		const data = await res.json();
+		if (!res.ok) { message.textContent = data.error || 'Save failed'; message.className = 'admin-message error'; message.hidden = false; return; }
+		message.textContent = 'Site text saved.'; message.className = 'admin-message success'; message.hidden = false;
+		await load();
+	});
+
+	load();
+</script>

@@ -1,0 +1,72 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Appearance" activeTab="appearance">
+	<h1>Site Appearance</h1>
+	<p class="admin-help">Theme, typography, colors, buttons, and global CSS. Changes apply site-wide after deploy.</p>
+	<div id="appearance-app" class="settings-grid"></div>
+	<div class="admin-actions"><button class="admin-button" id="save-appearance">Save Appearance</button></div>
+	<div id="appearance-message" hidden></div>
+</AdminLayout>
+
+<script>
+	const app = document.getElementById('appearance-app');
+	const message = document.getElementById('appearance-message');
+	let sha = '';
+	let theme = null;
+
+	const colorKeys = ['primary','secondary','accent','background','surface','text','mutedText','warning','danger','success','info'];
+
+	async function load() {
+		const res = await fetch('/api/theme');
+		const data = await res.json();
+		theme = data.theme;
+		sha = data.sha ?? '';
+		render();
+	}
+
+	function render() {
+		if (!app || !theme) return;
+		app.innerHTML = `
+			<section><h2>Colors</h2><div class="settings-color-row">${colorKeys.map((k) => `
+				<label>${k}<input type="color" data-color="${k}" value="${theme.colors[k]}" /></label>
+			`).join('')}</div></section>
+			<section><h2>Typography — Body Font</h2>
+				<label>Font Family<input data-typo="body-fontFamily" value="${theme.typography.body.fontFamily}" /></label>
+			</section>
+			<section><h2>Typography — Heading Font</h2>
+				<label>Font Family<input data-typo="heading-fontFamily" value="${theme.typography.heading.fontFamily}" /></label>
+			</section>
+			<section><h2>Global CSS</h2>
+				<label><textarea rows="8" id="global-css">${theme.globalCss ?? ''}</textarea></label>
+			</section>
+		`;
+		app.querySelectorAll('[data-color]').forEach((el) => {
+			el.addEventListener('input', (e) => {
+				theme.colors[e.target.dataset.color] = e.target.value;
+			});
+		});
+		app.querySelector('[data-typo="body-fontFamily"]')?.addEventListener('input', (e) => { theme.typography.body.fontFamily = e.target.value; });
+		app.querySelector('[data-typo="heading-fontFamily"]')?.addEventListener('input', (e) => { theme.typography.heading.fontFamily = e.target.value; });
+	}
+
+	document.getElementById('save-appearance')?.addEventListener('click', async () => {
+		theme.globalCss = document.getElementById('global-css')?.value ?? '';
+		const res = await fetch('/api/theme', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ theme, sha }) });
+		const data = await res.json();
+		if (!res.ok) {
+			message.textContent = data.error || 'Save failed';
+			message.className = 'admin-message error';
+			message.hidden = false;
+			return;
+		}
+		message.textContent = 'Appearance saved.';
+		message.className = 'admin-message success';
+		message.hidden = false;
+		await load();
+	});
+
+	load();
+</script>

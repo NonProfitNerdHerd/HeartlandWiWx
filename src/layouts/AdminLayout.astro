@@ -1,10 +1,11 @@
 ---
 interface Props {
 	title: string;
-	activeTab?: 'pages' | 'blog' | 'gallery';
+	activeTab?: 'pages' | 'blog' | 'gallery' | 'appearance' | 'navigation' | 'site-text' | 'global-blocks' | 'media';
+	wide?: boolean;
 }
 
-const { title, activeTab = 'pages' } = Astro.props;
+const { title, activeTab = 'pages', wide = false } = Astro.props;
 const currentPath = Astro.url.pathname;
 ---
 
@@ -14,27 +15,31 @@ const currentPath = Astro.url.pathname;
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="robots" content="noindex, nofollow" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
 		<title>{title} | Heartland Chasers Admin</title>
 	</head>
-	<body>
+	<body class:list={{ 'admin-wide': wide }}>
 		<header class="admin-header">
 			<div class="admin-header-inner">
-				<a class="admin-brand" href="/admin/pages">Heartland Chasers CMS</a>
+				<a class="admin-brand" href="/admin/pages">Heartland Chasers Builder</a>
 				<nav class="admin-nav">
 					<a href="/" target="_blank" rel="noreferrer">View Site</a>
 					<button type="button" id="logout-btn">Log out</button>
 				</nav>
 			</div>
 			<nav class="admin-tabs">
-				<a href="/admin/pages" class:list={{ active: activeTab === 'pages' || currentPath.startsWith('/admin/pages') }}>
-					Pages
-				</a>
-				<a href="/admin/blog" class:list={{ active: activeTab === 'blog' || currentPath.startsWith('/admin/blog') }}>
-					Blog Posts
-				</a>
-				<a href="/admin/gallery" class:list={{ active: activeTab === 'gallery' || currentPath.startsWith('/admin/gallery') }}>
-					Gallery
-				</a>
+				<span class="admin-tab-group-label">Content</span>
+				<a href="/admin/pages" class:list={{ active: activeTab === 'pages' || currentPath.startsWith('/admin/pages') }}>Pages</a>
+				<a href="/admin/blog" class:list={{ active: activeTab === 'blog' || currentPath.startsWith('/admin/blog') }}>Blog Posts</a>
+				<a href="/admin/gallery" class:list={{ active: activeTab === 'gallery' }}>Gallery</a>
+				<a href="/admin/media" class:list={{ active: activeTab === 'media' }}>Media</a>
+				<span class="admin-tab-group-label">Site</span>
+				<a href="/admin/appearance" class:list={{ active: activeTab === 'appearance' }}>Appearance</a>
+				<a href="/admin/navigation" class:list={{ active: activeTab === 'navigation' }}>Navigation</a>
+				<a href="/admin/site-text" class:list={{ active: activeTab === 'site-text' }}>Site Text</a>
+				<a href="/admin/global-blocks" class:list={{ active: activeTab === 'global-blocks' }}>Global Blocks</a>
 			</nav>
 		</header>
 		<main class="admin-main">

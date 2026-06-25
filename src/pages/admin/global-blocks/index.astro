@@ -1,0 +1,39 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Global Blocks" activeTab="global-blocks">
+	<h1>Global Blocks</h1>
+	<p class="admin-help">Reusable blocks that update everywhere they are used. Edit JSON for now; use Global Block type in the page editor to insert them.</p>
+	<label>Global Blocks (JSON)
+		<textarea id="global-blocks-json" rows="24"></textarea>
+	</label>
+	<div class="admin-actions"><button class="admin-button" id="save-global-blocks">Save Global Blocks</button></div>
+	<div id="global-blocks-message" hidden></div>
+</AdminLayout>
+
+<script>
+	const jsonArea = document.getElementById('global-blocks-json');
+	const message = document.getElementById('global-blocks-message');
+	let sha = '';
+
+	async function load() {
+		const res = await fetch('/api/global-blocks');
+		const data = await res.json();
+		sha = data.sha ?? '';
+		jsonArea.value = JSON.stringify(data.config, null, 2);
+	}
+
+	document.getElementById('save-global-blocks')?.addEventListener('click', async () => {
+		let config;
+		try { config = JSON.parse(jsonArea.value); } catch { message.textContent = 'Invalid JSON'; message.className = 'admin-message error'; message.hidden = false; return; }
+		const res = await fetch('/api/global-blocks', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ config, sha }) });
+		const data = await res.json();
+		if (!res.ok) { message.textContent = data.error || 'Save failed'; message.className = 'admin-message error'; message.hidden = false; return; }
+		message.textContent = 'Global blocks saved.'; message.className = 'admin-message success'; message.hidden = false;
+		await load();
+	});
+
+	load();
+</script>

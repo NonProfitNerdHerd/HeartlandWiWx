@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Nav from '../components/Nav.astro';
-import { getPageBySlug, getRoutablePages } from '../lib/content';
+import { getRoutablePages } from '../lib/content';
 
 export function getStaticPaths() {
 	return getRoutablePages().map((page) => ({
@@ -10,14 +10,14 @@ export function getStaticPaths() {
 }
 
 const slug = Astro.params.slug ?? '';
-const page = getPageBySlug(slug);
+const page = getRoutablePages().find((p) => p.slug === slug);
 
 if (!page) {
 	return new Response('Not Found', { status: 404 });
 }
 ---
 
-<Layout title={page.seoTitle || page.title} description={page.description || page.seoDescription}>
+<Layout title={page.seoTitle || page.title} description={page.description}>
 	<Nav slot="nav" />
 	<main>
 		<div class="cms-content" set:html={page.html} />

@@ -3,19 +3,22 @@ import { SESSION_COOKIE, verifySessionToken } from './lib/auth';
 
 const PUBLIC_ADMIN_PATHS = new Set(['/admin/login']);
 
-function isProtectedApi(pathname: string): boolean {
-	return (
-		pathname.startsWith('/api/pages') ||
-		pathname.startsWith('/api/blog') ||
-		pathname.startsWith('/api/gallery') ||
-		pathname.startsWith('/api/auth/logout')
-	);
-}
+const PROTECTED_API_PREFIXES = [
+	'/api/pages',
+	'/api/blog',
+	'/api/gallery',
+	'/api/theme',
+	'/api/navigation',
+	'/api/site-text',
+	'/api/global-blocks',
+	'/api/media',
+	'/api/auth/logout',
+];
 
 export const onRequest = defineMiddleware(async (context, next) => {
 	const { pathname } = context.url;
 	const isAdminRoute = pathname.startsWith('/admin');
-	const isAdminApi = isProtectedApi(pathname);
+	const isAdminApi = PROTECTED_API_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
 	if (!isAdminRoute && !isAdminApi) {
 		return next();
@@ -33,7 +36,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
 				headers: { 'Content-Type': 'application/json' },
 			});
 		}
-
 		return context.redirect('/admin/login');
 	}
 
