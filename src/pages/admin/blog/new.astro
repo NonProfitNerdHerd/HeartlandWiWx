@@ -4,11 +4,11 @@ export const prerender = false;
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 ---
 
-<AdminLayout title="New Page" activeTab="pages">
-	<h1>New Page</h1>
-	<p class="admin-help">Create a Markdown page and save it to GitHub. The public site updates after Vercel redeploys.</p>
+<AdminLayout title="New Blog Post" activeTab="blog">
+	<h1>New Blog Post</h1>
+	<p class="admin-help">Create a chase report or blog post. It will appear at `/chase-reports/your-slug` after deploy.</p>
 
-	<form id="page-form" class="admin-form">
+	<form id="blog-form" class="admin-form">
 		<label>
 			Title
 			<input type="text" name="title" required />
@@ -16,6 +16,14 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 		<label>
 			Slug
 			<input type="text" name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required />
+		</label>
+		<label>
+			Date
+			<input type="date" name="date" required />
+		</label>
+		<label>
+			Excerpt
+			<input type="text" name="excerpt" />
 		</label>
 		<label>
 			SEO Title
@@ -31,25 +39,26 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 		</label>
 		<label>
 			Body (Markdown)
-			<textarea name="body" placeholder="# Page title&#10;&#10;Your content here..."></textarea>
+			<textarea name="body" placeholder="## Forecast&#10;&#10;Your post content here..."></textarea>
 		</label>
 		<div id="form-message" hidden></div>
 		<div class="admin-actions">
-			<button class="admin-button" type="submit">Save Page</button>
-			<a class="admin-button-secondary" href="/admin/pages">Cancel</a>
+			<button class="admin-button" type="submit">Save Post</button>
+			<a class="admin-button-secondary" href="/admin/blog">Cancel</a>
 		</div>
 	</form>
 </AdminLayout>
 
 <script>
-	const form = document.getElementById('page-form') as HTMLFormElement;
+	const form = document.getElementById('blog-form') as HTMLFormElement;
 	const message = document.getElementById('form-message') as HTMLDivElement;
 	const titleInput = form.elements.namedItem('title') as HTMLInputElement;
 	const slugInput = form.elements.namedItem('slug') as HTMLInputElement;
-	const seoTitleInput = form.elements.namedItem('seoTitle') as HTMLInputElement;
+	const dateInput = form.elements.namedItem('date') as HTMLInputElement;
+
+	dateInput.value = new Date().toISOString().slice(0, 10);
 
 	let slugEdited = false;
-
 	slugInput.addEventListener('input', () => {
 		slugEdited = true;
 	});
@@ -63,12 +72,6 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 			.replace(/^-+|-+$/g, '');
 	});
 
-	titleInput.addEventListener('input', () => {
-		if (!seoTitleInput.value) {
-			seoTitleInput.placeholder = titleInput.value;
-		}
-	});
-
 	form.addEventListener('submit', async (event) => {
 		event.preventDefault();
 		message.hidden = true;
@@ -77,13 +80,15 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 		const payload = {
 			title: String(formData.get('title') ?? ''),
 			slug: String(formData.get('slug') ?? ''),
+			date: String(formData.get('date') ?? ''),
+			excerpt: String(formData.get('excerpt') ?? ''),
 			seoTitle: String(formData.get('seoTitle') ?? '') || String(formData.get('title') ?? ''),
-			description: String(formData.get('description') ?? ''),
+			description: String(formData.get('description') ?? '') || String(formData.get('excerpt') ?? ''),
 			body: String(formData.get('body') ?? ''),
 			published: formData.get('published') === 'on',
 		};
 
-		const response = await fetch('/api/pages/new', {
+		const response = await fetch('/api/blog/new', {
 			method: 'PUT',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(payload),
@@ -91,12 +96,12 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
 		const result = await response.json();
 		if (!response.ok) {
-			message.textContent = result.error || 'Failed to save page.';
+			message.textContent = result.error || 'Failed to save blog post.';
 			message.className = 'admin-message error';
 			message.hidden = false;
 			return;
 		}
 
-		window.location.href = `/admin/pages/${result.slug}`;
+		window.location.href = `/admin/blog/${result.slug}`;
 	});
 </script>

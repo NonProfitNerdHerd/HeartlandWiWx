@@ -1,0 +1,89 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getPage } from '../../../lib/pages';
+import { BLOG_INDEX_PAGE_SLUG } from '../../../lib/content';
+
+const page = await getPage(BLOG_INDEX_PAGE_SLUG);
+---
+
+<AdminLayout title="Blog Landing Page" activeTab="blog">
+	<h1>Blog Landing Page</h1>
+	<p class="admin-help">Edit the intro content for <a href="/chase-reports" target="_blank" rel="noreferrer">/chase-reports</a>.</p>
+
+	<form id="page-form" class="admin-form" data-original-slug={BLOG_INDEX_PAGE_SLUG}>
+		<label>
+			Title
+			<input type="text" name="title" value={page?.title ?? 'Chase Reports'} required />
+		</label>
+		<label>
+			Slug
+			<input type="text" name="slug" value={BLOG_INDEX_PAGE_SLUG} readonly />
+		</label>
+		<label>
+			SEO Title
+			<input type="text" name="seoTitle" value={page?.seoTitle ?? ''} />
+		</label>
+		<label>
+			Meta Description
+			<input type="text" name="description" value={page?.description ?? ''} />
+		</label>
+		<label class="admin-checkbox">
+			<input type="checkbox" name="published" checked={page?.published ?? true} />
+			Published
+		</label>
+		<label>
+			Body (Markdown)
+			<textarea name="body">{page?.body ?? '# Chase Reports\n\nReports, photos, radar notes, and lessons learned from the road.\n'}</textarea>
+		</label>
+		<div id="form-message" hidden></div>
+		<div class="admin-actions">
+			<button class="admin-button" type="submit">Save Landing Page</button>
+			<a class="admin-button-secondary" href="/admin/blog">Back to Blog</a>
+		</div>
+	</form>
+</AdminLayout>
+
+<script>
+	const form = document.getElementById('page-form') as HTMLFormElement;
+	const message = document.getElementById('form-message') as HTMLDivElement;
+	const originalSlug = form.dataset.originalSlug ?? 'chase-reports';
+
+	form.addEventListener('submit', async (event) => {
+		event.preventDefault();
+		message.hidden = true;
+
+		const formData = new FormData(form);
+		const payload = {
+			title: String(formData.get('title') ?? ''),
+			slug: String(formData.get('slug') ?? ''),
+			seoTitle: String(formData.get('seoTitle') ?? '') || String(formData.get('title') ?? ''),
+			description: String(formData.get('description') ?? ''),
+			body: String(formData.get('body') ?? ''),
+			published: formData.get('published') === 'on',
+			menuLabel: 'Chase Reports',
+			showInMenu: true,
+			menuOrder: 5,
+		};
+
+		const endpoint = originalSlug === 'new' ? '/api/pages/new' : `/api/pages/${encodeURIComponent(originalSlug)}`;
+		const response = await fetch(endpoint, {
+			method: 'PUT',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(payload),
+		});
+
+		const result = await response.json();
+		if (!response.ok) {
+			message.textContent = result.error || 'Failed to save landing page.';
+			message.className = 'admin-message error';
+			message.hidden = false;
+			return;
+		}
+
+		message.textContent = 'Landing page saved. Vercel will redeploy shortly.';
+		message.className = 'admin-message success';
+		message.hidden = false;
+	});
+</script>

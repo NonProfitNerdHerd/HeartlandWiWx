@@ -1,6 +1,13 @@
 const GITHUB_API = 'https://api.github.com';
 
-function githubConfig() {
+export interface GitHubConfig {
+	token: string;
+	owner: string;
+	repo: string;
+	branch: string;
+}
+
+function githubConfig(): GitHubConfig | null {
 	const token = import.meta.env.GITHUB_TOKEN;
 	const owner = import.meta.env.GITHUB_OWNER;
 	const repo = import.meta.env.GITHUB_REPO;
@@ -15,6 +22,27 @@ function githubConfig() {
 
 export function isGitHubConfigured(): boolean {
 	return githubConfig() !== null;
+}
+
+export function getGitHubConfigSummary(): string {
+	const config = githubConfig();
+	if (!config) return 'GitHub not configured';
+	return `${config.owner}/${config.repo}@${config.branch}`;
+}
+
+function formatGitHubError(status: number, error: string, action: string): string {
+	const config = githubConfig();
+	const target = config ? `${config.owner}/${config.repo} on branch ${config.branch}` : 'configured repository';
+
+	if (status === 404) {
+		return `GitHub ${action} failed (404): Could not access ${target}. Check GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH, and that your token has Contents read/write access. Details: ${error}`;
+	}
+
+	return `GitHub ${action} failed (${status}) for ${target}: ${error}`;
+}
+
+function contentsPath(path: string): string {
+	return path.split('/').map(encodeURIComponent).join('/');
 }
 
 async function githubFetch(path: string, init: RequestInit = {}): Promise<Response> {
@@ -48,7 +76,7 @@ export async function getGitHubFile(path: string): Promise<GitHubFile | null> {
 	if (!config) return null;
 
 	const response = await githubFetch(
-		`/repos/${config.owner}/${config.repo}/contents/${encodeURIComponent(path).replace(/%2F/g, '/')}?ref=${config.branch}`,
+		`/repos/${config.owner}/${config.repo}/contents/${contentsPath(path)}?ref=${encodeURIComponent(config.branch)}`,
 	);
 
 	if (response.status === 404) {
@@ -57,7 +85,7 @@ export async function getGitHubFile(path: string): Promise<GitHubFile | null> {
 
 	if (!response.ok) {
 		const error = await response.text();
-		throw new Error(`GitHub read failed (${response.status}): ${error}`);
+		throw new Error(formatGitHubError(response.status, error, 'read'));
 	}
 
 	const data = (await response.json()) as {
@@ -73,12 +101,12 @@ export async function getGitHubFile(path: string): Promise<GitHubFile | null> {
 	};
 }
 
-export async function listGitHubPageFiles(): Promise<Array<{ path: string; sha: string; name: string }>> {
+export async function listGitHubDirectory(directory: string): Promise<Array<{ path: string; sha: string; name: string }>> {
 	const config = githubConfig();
 	if (!config) return [];
 
 	const response = await githubFetch(
-		`/repos/${config.owner}/${config.repo}/contents/src/content/pages?ref=${config.branch}`,
+		`/repos/${config.owner}/${config.repo}/contents/${contentsPath(directory)}?ref=${encodeURIComponent(config.branch)}`,
 	);
 
 	if (response.status === 404) {
@@ -87,7 +115,7 @@ export async function listGitHubPageFiles(): Promise<Array<{ path: string; sha: 
 
 	if (!response.ok) {
 		const error = await response.text();
-		throw new Error(`GitHub list failed (${response.status}): ${error}`);
+		throw new Error(formatGitHubError(response.status, error, 'list'));
 	}
 
 	const data = (await response.json()) as Array<{ path: string; sha: string; name: string; type: string }>;
@@ -110,17 +138,14 @@ export async function putGitHubFile(path: string, content: string, message: stri
 		body.sha = sha;
 	}
 
-	const response = await githubFetch(
-		`/repos/${config.owner}/${config.repo}/contents/${encodeURIComponent(path).replace(/%2F/g, '/')}`,
-		{
-			method: 'PUT',
-			body: JSON.stringify(body),
-		},
-	);
+	const response = await githubFetch(`/repos/${config.owner}/${config.repo}/contents/${contentsPath(path)}`, {
+		method: 'PUT',
+		body: JSON.stringify(body),
+	});
 
 	if (!response.ok) {
 		const error = await response.text();
-		throw new Error(`GitHub write failed (${response.status}): ${error}`);
+		throw new Error(formatGitHubError(response.status, error, 'write'));
 	}
 }
 
@@ -130,20 +155,17 @@ export async function deleteGitHubFile(path: string, sha: string, message: strin
 		throw new Error('GitHub is not configured');
 	}
 
-	const response = await githubFetch(
-		`/repos/${config.owner}/${config.repo}/contents/${encodeURIComponent(path).replace(/%2F/g, '/')}`,
-		{
-			method: 'DELETE',
-			body: JSON.stringify({
-				message,
-				sha,
-				branch: config.branch,
-			}),
-		},
-	);
+	const response = await githubFetch(`/repos/${config.owner}/${config.repo}/contents/${contentsPath(path)}`, {
+		method: 'DELETE',
+		body: JSON.stringify({
+			message,
+			sha,
+			branch: config.branch,
+		}),
+	});
 
 	if (!response.ok) {
 		const error = await response.text();
-		throw new Error(`GitHub delete failed (${response.status}): ${error}`);
+		throw new Error(formatGitHubError(response.status, error, 'delete'));
 	}
 }

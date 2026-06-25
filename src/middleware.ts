@@ -3,10 +3,19 @@ import { SESSION_COOKIE, verifySessionToken } from './lib/auth';
 
 const PUBLIC_ADMIN_PATHS = new Set(['/admin/login']);
 
+function isProtectedApi(pathname: string): boolean {
+	return (
+		pathname.startsWith('/api/pages') ||
+		pathname.startsWith('/api/blog') ||
+		pathname.startsWith('/api/gallery') ||
+		pathname.startsWith('/api/auth/logout')
+	);
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
 	const { pathname } = context.url;
 	const isAdminRoute = pathname.startsWith('/admin');
-	const isAdminApi = pathname.startsWith('/api/pages') || pathname.startsWith('/api/auth/logout');
+	const isAdminApi = isProtectedApi(pathname);
 
 	if (!isAdminRoute && !isAdminApi) {
 		return next();

@@ -2,30 +2,25 @@
 export const prerender = false;
 
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { getPage } from '../../../lib/pages';
+import { getGalleryPage } from '../../../lib/gallery';
 
-const slug = Astro.params.slug ?? '';
-const page = await getPage(slug);
+const page = await getGalleryPage();
 
 if (!page) {
 	return Astro.redirect('/admin/pages');
 }
 ---
 
-<AdminLayout title={`Edit ${page.title}`} activeTab="pages">
-	<h1>Edit Page</h1>
+<AdminLayout title="Gallery" activeTab="gallery">
+	<h1>Gallery Page</h1>
 	<p class="admin-help">
-		Editing <strong>{page.slug}</strong>. Saving commits to GitHub; the live site updates after Vercel redeploys.
+		Edit the gallery page shown at <a href="/gallery" target="_blank" rel="noreferrer">/gallery</a>.
 	</p>
 
-	<form id="page-form" class="admin-form" data-original-slug={page.slug}>
+	<form id="gallery-form" class="admin-form">
 		<label>
 			Title
 			<input type="text" name="title" value={page.title} required />
-		</label>
-		<label>
-			Slug
-			<input type="text" name="slug" value={page.slug} pattern="[a-z0-9]+(-[a-z0-9]+)*" required />
 		</label>
 		<label>
 			SEO Title
@@ -45,28 +40,15 @@ if (!page) {
 		</label>
 		<div id="form-message" hidden></div>
 		<div class="admin-actions">
-			<button class="admin-button" type="submit">Save Page</button>
-			{
-				page.published ? (
-					<a
-						class="admin-button-secondary"
-						href={page.slug === 'home' ? '/' : `/${page.slug}`}
-						target="_blank"
-						rel="noreferrer"
-					>
-						Preview
-					</a>
-				) : null
-			}
-			<a class="admin-button-secondary" href="/admin/pages">Back to Pages</a>
+			<button class="admin-button" type="submit">Save Gallery</button>
+			<a class="admin-button-secondary" href="/gallery" target="_blank" rel="noreferrer">Preview</a>
 		</div>
 	</form>
 </AdminLayout>
 
 <script>
-	const form = document.getElementById('page-form') as HTMLFormElement;
+	const form = document.getElementById('gallery-form') as HTMLFormElement;
 	const message = document.getElementById('form-message') as HTMLDivElement;
-	const originalSlug = form.dataset.originalSlug ?? '';
 
 	form.addEventListener('submit', async (event) => {
 		event.preventDefault();
@@ -75,14 +57,16 @@ if (!page) {
 		const formData = new FormData(form);
 		const payload = {
 			title: String(formData.get('title') ?? ''),
-			slug: String(formData.get('slug') ?? ''),
 			seoTitle: String(formData.get('seoTitle') ?? '') || String(formData.get('title') ?? ''),
 			description: String(formData.get('description') ?? ''),
 			body: String(formData.get('body') ?? ''),
 			published: formData.get('published') === 'on',
+			menuLabel: 'Gallery',
+			showInMenu: true,
+			menuOrder: 3,
 		};
 
-		const response = await fetch(`/api/pages/${encodeURIComponent(originalSlug)}`, {
+		const response = await fetch('/api/gallery', {
 			method: 'PUT',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(payload),
@@ -90,18 +74,14 @@ if (!page) {
 
 		const result = await response.json();
 		if (!response.ok) {
-			message.textContent = result.error || 'Failed to save page.';
+			message.textContent = result.error || 'Failed to save gallery page.';
 			message.className = 'admin-message error';
 			message.hidden = false;
 			return;
 		}
 
-		message.textContent = 'Page saved. Vercel will redeploy shortly with the updated content.';
+		message.textContent = 'Gallery saved. Vercel will redeploy shortly.';
 		message.className = 'admin-message success';
 		message.hidden = false;
-
-		if (result.slug !== originalSlug) {
-			window.location.href = `/admin/pages/${result.slug}`;
-		}
 	});
 </script>

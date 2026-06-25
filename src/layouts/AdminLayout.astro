@@ -1,9 +1,11 @@
 ---
 interface Props {
 	title: string;
+	activeTab?: 'pages' | 'blog' | 'gallery';
 }
 
-const { title } = Astro.props;
+const { title, activeTab = 'pages' } = Astro.props;
+const currentPath = Astro.url.pathname;
 ---
 
 <!doctype html>
@@ -19,11 +21,21 @@ const { title } = Astro.props;
 			<div class="admin-header-inner">
 				<a class="admin-brand" href="/admin/pages">Heartland Chasers CMS</a>
 				<nav class="admin-nav">
-					<a href="/admin/pages">Pages</a>
 					<a href="/" target="_blank" rel="noreferrer">View Site</a>
 					<button type="button" id="logout-btn">Log out</button>
 				</nav>
 			</div>
+			<nav class="admin-tabs">
+				<a href="/admin/pages" class:list={{ active: activeTab === 'pages' || currentPath.startsWith('/admin/pages') }}>
+					Pages
+				</a>
+				<a href="/admin/blog" class:list={{ active: activeTab === 'blog' || currentPath.startsWith('/admin/blog') }}>
+					Blog Posts
+				</a>
+				<a href="/admin/gallery" class:list={{ active: activeTab === 'gallery' || currentPath.startsWith('/admin/gallery') }}>
+					Gallery
+				</a>
+			</nav>
 		</header>
 		<main class="admin-main">
 			<slot />

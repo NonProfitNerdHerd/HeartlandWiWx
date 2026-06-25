@@ -4,10 +4,17 @@ import matter from 'gray-matter';
 import { marked } from 'marked';
 
 const pagesRoot = path.join(process.cwd(), 'src/content/pages');
+const blogRoot = path.join(process.cwd(), 'src/content/blog');
 const contentRoot = path.join(process.cwd(), 'content');
 const RESERVED_PAGE_SLUGS = new Set(['home', 'chase-reports']);
 
 marked.setOptions({ gfm: true, breaks: true });
+
+export const PAGES_CONTENT_DIR = 'src/content/pages';
+export const BLOG_CONTENT_DIR = 'src/content/blog';
+export const GALLERY_PAGE_SLUG = 'gallery';
+export const BLOG_INDEX_PAGE_SLUG = 'chase-reports';
+export const ADMIN_ONLY_PAGE_SLUGS = new Set([GALLERY_PAGE_SLUG, BLOG_INDEX_PAGE_SLUG]);
 
 export interface PageFrontmatter {
 	title: string;
@@ -116,7 +123,9 @@ export function getPageHref(slug: string): string {
 }
 
 export function getAllChaseReports(includeDrafts = false): ChaseReport[] {
-	return readMarkdownFiles<ChaseReportFrontmatter>(path.join(contentRoot, 'chase-reports'))
+	const blogDir = fs.existsSync(blogRoot) ? blogRoot : path.join(contentRoot, 'chase-reports');
+
+	return readMarkdownFiles<ChaseReportFrontmatter>(blogDir)
 		.map(({ data, body, filename }) => {
 			const slug = data.slug || filename;
 			return {
@@ -140,5 +149,3 @@ export function getSiteSettings(): SiteSettings {
 	const raw = fs.readFileSync(settingsPath, 'utf-8');
 	return JSON.parse(raw) as SiteSettings;
 }
-
-export const PAGES_CONTENT_DIR = 'src/content/pages';

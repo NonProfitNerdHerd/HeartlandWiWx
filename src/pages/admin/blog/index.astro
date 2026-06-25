@@ -1,0 +1,73 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { listBlogPosts } from '../../../lib/blog';
+import { getPage } from '../../../lib/pages';
+import { BLOG_INDEX_PAGE_SLUG } from '../../../lib/content';
+
+const posts = await listBlogPosts();
+const landingPage = await getPage(BLOG_INDEX_PAGE_SLUG);
+---
+
+<AdminLayout title="Blog Posts" activeTab="blog">
+	<div class="admin-toolbar">
+		<h1>Blog Posts</h1>
+		<a class="admin-button" href="/admin/blog/new">New Post</a>
+	</div>
+
+	<section class="admin-section">
+		<h2>Blog Landing Page</h2>
+		<p class="admin-help">This is the intro text shown at <a href="/chase-reports" target="_blank" rel="noreferrer">/chase-reports</a>.</p>
+		{
+			landingPage ? (
+				<p>
+					<strong>{landingPage.title}</strong> — last updated {landingPage.updatedAt}
+					<a class="admin-inline-link" href="/admin/blog/landing">Edit landing page</a>
+				</p>
+			) : (
+				<p>
+					Landing page not found. <a href="/admin/blog/landing">Create it</a>
+				</p>
+			)
+		}
+	</section>
+
+	<section class="admin-section">
+		<h2>Posts</h2>
+		{
+			posts.length === 0 ? (
+				<p>No blog posts yet. <a href="/admin/blog/new">Create your first post</a>.</p>
+			) : (
+				<table class="admin-table">
+					<thead>
+						<tr>
+							<th>Title</th>
+							<th>Slug</th>
+							<th>Date</th>
+							<th>Status</th>
+							<th />
+						</tr>
+					</thead>
+					<tbody>
+						{posts.map((post) => (
+							<tr>
+								<td>{post.title}</td>
+								<td>{post.slug}</td>
+								<td>{post.date}</td>
+								<td>
+									<span class:list={['admin-badge', post.published ? 'published' : 'draft']}>
+										{post.published ? 'Published' : 'Draft'}
+									</span>
+								</td>
+								<td>
+									<a href={`/admin/blog/${post.slug}`}>Edit</a>
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			)
+		}
+	</section>
+</AdminLayout>

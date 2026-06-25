@@ -11,14 +11,22 @@ export function slugToFilename(slug: string): string {
 	return `${slug}.md`;
 }
 
-export function isSafePagePath(relativePath: string): boolean {
+export function isSafeContentPath(relativePath: string, contentDir: string): boolean {
 	const normalized = relativePath.replace(/\\/g, '/');
-	if (!normalized.startsWith('src/content/pages/')) {
+	const prefix = `${contentDir.replace(/\\/g, '/')}/`;
+
+	if (!normalized.startsWith(prefix)) {
 		return false;
 	}
 	if (normalized.includes('..')) {
 		return false;
 	}
-	const filename = normalized.slice('src/content/pages/'.length);
+
+	const filename = normalized.slice(prefix.length);
 	return /^[a-z0-9-]+\.md$/.test(filename);
+}
+
+/** @deprecated use isSafeContentPath */
+export function isSafePagePath(relativePath: string): boolean {
+	return isSafeContentPath(relativePath, 'src/content/pages');
 }

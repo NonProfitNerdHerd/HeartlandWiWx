@@ -1,0 +1,112 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getBlogPost } from '../../../lib/blog';
+
+const slug = Astro.params.slug ?? '';
+const post = await getBlogPost(slug);
+
+if (!post) {
+	return Astro.redirect('/admin/blog');
+}
+---
+
+<AdminLayout title={`Edit ${post.title}`} activeTab="blog">
+	<h1>Edit Blog Post</h1>
+	<p class="admin-help">
+		Editing <strong>{post.slug}</strong>. Saving commits to GitHub; the live site updates after Vercel redeploys.
+	</p>
+
+	<form id="blog-form" class="admin-form" data-original-slug={post.slug}>
+		<label>
+			Title
+			<input type="text" name="title" value={post.title} required />
+		</label>
+		<label>
+			Slug
+			<input type="text" name="slug" value={post.slug} pattern="[a-z0-9]+(-[a-z0-9]+)*" required />
+		</label>
+		<label>
+			Date
+			<input type="date" name="date" value={post.date} required />
+		</label>
+		<label>
+			Excerpt
+			<input type="text" name="excerpt" value={post.excerpt} />
+		</label>
+		<label>
+			SEO Title
+			<input type="text" name="seoTitle" value={post.seoTitle} />
+		</label>
+		<label>
+			Meta Description
+			<input type="text" name="description" value={post.description} />
+		</label>
+		<label class="admin-checkbox">
+			<input type="checkbox" name="published" checked={post.published} />
+			Published
+		</label>
+		<label>
+			Body (Markdown)
+			<textarea name="body">{post.body}</textarea>
+		</label>
+		<div id="form-message" hidden></div>
+		<div class="admin-actions">
+			<button class="admin-button" type="submit">Save Post</button>
+			{
+				post.published ? (
+					<a class="admin-button-secondary" href={`/chase-reports/${post.slug}`} target="_blank" rel="noreferrer">
+						Preview
+					</a>
+				) : null
+			}
+			<a class="admin-button-secondary" href="/admin/blog">Back to Blog</a>
+		</div>
+	</form>
+</AdminLayout>
+
+<script>
+	const form = document.getElementById('blog-form') as HTMLFormElement;
+	const message = document.getElementById('form-message') as HTMLDivElement;
+	const originalSlug = form.dataset.originalSlug ?? '';
+
+	form.addEventListener('submit', async (event) => {
+		event.preventDefault();
+		message.hidden = true;
+
+		const formData = new FormData(form);
+		const payload = {
+			title: String(formData.get('title') ?? ''),
+			slug: String(formData.get('slug') ?? ''),
+			date: String(formData.get('date') ?? ''),
+			excerpt: String(formData.get('excerpt') ?? ''),
+			seoTitle: String(formData.get('seoTitle') ?? '') || String(formData.get('title') ?? ''),
+			description: String(formData.get('description') ?? '') || String(formData.get('excerpt') ?? ''),
+			body: String(formData.get('body') ?? ''),
+			published: formData.get('published') === 'on',
+		};
+
+		const response = await fetch(`/api/blog/${encodeURIComponent(originalSlug)}`, {
+			method: 'PUT',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(payload),
+		});
+
+		const result = await response.json();
+		if (!response.ok) {
+			message.textContent = result.error || 'Failed to save blog post.';
+			message.className = 'admin-message error';
+			message.hidden = false;
+			return;
+		}
+
+		message.textContent = 'Blog post saved. Vercel will redeploy shortly with the updated content.';
+		message.className = 'admin-message success';
+		message.hidden = false;
+
+		if (result.slug !== originalSlug) {
+			window.location.href = `/admin/blog/${result.slug}`;
+		}
+	});
+</script>
