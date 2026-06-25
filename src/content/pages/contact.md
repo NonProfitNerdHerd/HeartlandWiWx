@@ -5,7 +5,9 @@ menuLabel: Contact
 showInMenu: true
 menuOrder: 4
 seoTitle: Contact | Heartland Chasers
-seoDescription: Get in touch with Heartland Chasers for questions, collaborations, or storm chasing updates.
+description: Get in touch with Heartland Chasers for questions, collaborations, or storm chasing updates.
+published: true
+updatedAt: "2026-06-23"
 ---
 
 # Contact Us

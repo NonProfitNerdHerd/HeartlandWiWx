@@ -3,6 +3,7 @@ import path from 'node:path';
 import matter from 'gray-matter';
 import { marked } from 'marked';
 
+const pagesRoot = path.join(process.cwd(), 'src/content/pages');
 const contentRoot = path.join(process.cwd(), 'content');
 const RESERVED_PAGE_SLUGS = new Set(['home', 'chase-reports']);
 
@@ -15,7 +16,11 @@ export interface PageFrontmatter {
 	showInMenu?: boolean;
 	menuOrder?: number;
 	seoTitle?: string;
+	description?: string;
+	/** @deprecated use description */
 	seoDescription?: string;
+	published?: boolean;
+	updatedAt?: string;
 }
 
 export interface Page extends PageFrontmatter {
@@ -71,21 +76,27 @@ function toHtml(body: string): string {
 	return marked.parse(body) as string;
 }
 
-export function getAllPages(): Page[] {
-	return readMarkdownFiles<PageFrontmatter>(path.join(contentRoot, 'pages')).map(({ data, body, filename }) => {
-		const slug = data.slug || filename;
-		return {
-			...data,
-			slug,
-			body,
-			html: toHtml(body),
-			filename,
-		};
-	});
+function normalizePage(data: PageFrontmatter, body: string, filename: string): Page {
+	const slug = data.slug || filename;
+	const description = data.description || data.seoDescription;
+	return {
+		...data,
+		slug,
+		description,
+		body,
+		html: toHtml(body),
+		filename,
+	};
 }
 
-export function getPageBySlug(slug: string): Page | undefined {
-	return getAllPages().find((page) => page.slug === slug);
+export function getAllPages(includeUnpublished = false): Page[] {
+	return readMarkdownFiles<PageFrontmatter>(pagesRoot)
+		.map(({ data, body, filename }) => normalizePage(data, body, filename))
+		.filter((page) => includeUnpublished || page.published !== false);
+}
+
+export function getPageBySlug(slug: string, includeUnpublished = false): Page | undefined {
+	return getAllPages(includeUnpublished).find((page) => page.slug === slug);
 }
 
 export function getRoutablePages(): Page[] {
@@ -94,7 +105,7 @@ export function getRoutablePages(): Page[] {
 
 export function getMenuPages(): Page[] {
 	return getAllPages()
-		.filter((page) => page.showInMenu)
+		.filter((page) => page.showInMenu && page.published !== false)
 		.sort((a, b) => (a.menuOrder ?? 999) - (b.menuOrder ?? 999));
 }
 
@@ -129,3 +140,5 @@ export function getSiteSettings(): SiteSettings {
 	const raw = fs.readFileSync(settingsPath, 'utf-8');
 	return JSON.parse(raw) as SiteSettings;
 }
+
+export const PAGES_CONTENT_DIR = 'src/content/pages';

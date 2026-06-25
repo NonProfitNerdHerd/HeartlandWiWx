@@ -5,7 +5,9 @@ menuLabel: Chase Reports
 showInMenu: true
 menuOrder: 5
 seoTitle: Chase Reports | Heartland Chasers
-seoDescription: Storm chase reports, radar notes, photos, and lessons learned from the road.
+description: Storm chase reports, radar notes, photos, and lessons learned from the road.
+published: true
+updatedAt: "2026-06-23"
 ---
 
 # Chase Reports

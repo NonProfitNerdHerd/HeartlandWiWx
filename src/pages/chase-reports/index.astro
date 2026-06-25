@@ -9,7 +9,7 @@ const reports = getAllChaseReports();
 
 <Layout
 	title={intro?.seoTitle || 'Chase Reports | Heartland Chasers'}
-	description={intro?.seoDescription || 'Storm chase reports from Heartland Chasers.'}
+	description={intro?.description || intro?.seoDescription || 'Storm chase reports from Heartland Chasers.'}
 >
 	<Nav slot="nav" />
 

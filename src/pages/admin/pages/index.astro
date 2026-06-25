@@ -1,0 +1,50 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { listPages } from '../../../lib/pages';
+
+const pages = await listPages();
+---
+
+<AdminLayout title="Pages">
+	<div class="admin-toolbar">
+		<h1>Pages</h1>
+		<a class="admin-button" href="/admin/pages/new">New Page</a>
+	</div>
+
+	{
+		pages.length === 0 ? (
+			<p>No pages yet. <a href="/admin/pages/new">Create your first page</a>.</p>
+		) : (
+			<table class="admin-table">
+				<thead>
+					<tr>
+						<th>Title</th>
+						<th>Slug</th>
+						<th>Updated</th>
+						<th>Status</th>
+						<th />
+					</tr>
+				</thead>
+				<tbody>
+					{pages.map((page) => (
+						<tr>
+							<td>{page.title}</td>
+							<td>{page.slug}</td>
+							<td>{page.updatedAt}</td>
+							<td>
+								<span class:list={['admin-badge', page.published ? 'published' : 'draft']}>
+									{page.published ? 'Published' : 'Draft'}
+								</span>
+							</td>
+							<td>
+								<a href={`/admin/pages/${page.slug}`}>Edit</a>
+							</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		)
+	}
+</AdminLayout>

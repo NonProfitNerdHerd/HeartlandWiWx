@@ -5,7 +5,9 @@ menuLabel: Gallery
 showInMenu: true
 menuOrder: 3
 seoTitle: Gallery | Heartland Chasers
-seoDescription: Photos and moments from Heartland Chasers storm chases across the Midwest.
+description: Photos and moments from Heartland Chasers storm chases across the Midwest.
+published: true
+updatedAt: "2026-06-23"
 ---
 
 # Chase Gallery

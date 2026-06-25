@@ -1,0 +1,43 @@
+---
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="robots" content="noindex, nofollow" />
+		<title>{title} | Heartland Chasers Admin</title>
+	</head>
+	<body>
+		<header class="admin-header">
+			<div class="admin-header-inner">
+				<a class="admin-brand" href="/admin/pages">Heartland Chasers CMS</a>
+				<nav class="admin-nav">
+					<a href="/admin/pages">Pages</a>
+					<a href="/" target="_blank" rel="noreferrer">View Site</a>
+					<button type="button" id="logout-btn">Log out</button>
+				</nav>
+			</div>
+		</header>
+		<main class="admin-main">
+			<slot />
+		</main>
+	</body>
+</html>
+
+<style is:global>
+	@import '../styles/admin.css';
+</style>
+
+<script>
+	document.getElementById('logout-btn')?.addEventListener('click', async () => {
+		await fetch('/api/auth/logout', { method: 'POST' });
+		window.location.href = '/admin/login';
+	});
+</script>

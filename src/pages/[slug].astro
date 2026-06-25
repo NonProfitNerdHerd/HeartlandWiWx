@@ -17,7 +17,7 @@ if (!page) {
 }
 ---
 
-<Layout title={page.seoTitle || page.title} description={page.seoDescription}>
+<Layout title={page.seoTitle || page.title} description={page.description || page.seoDescription}>
 	<Nav slot="nav" />
 	<main>
 		<div class="cms-content" set:html={page.html} />

@@ -5,7 +5,9 @@ menuLabel: About
 showInMenu: true
 menuOrder: 2
 seoTitle: About Us | Heartland Chasers
-seoDescription: Meet Ike and Jess, a married couple from western Wisconsin chasing storms across the Midwest with Heartland Chasers.
+description: Meet Ike and Jess, a married couple from western Wisconsin chasing storms across the Midwest with Heartland Chasers.
+published: true
+updatedAt: "2026-06-23"
 ---
 
 We're Ike and Jess, two weather enthusiasts from western Wisconsin who decided that instead of sitting on the porch watching storms roll by, we'd start following them.

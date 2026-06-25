@@ -1,0 +1,64 @@
+---
+export const prerender = false;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="robots" content="noindex, nofollow" />
+		<title>Admin Login | Heartland Chasers</title>
+	</head>
+	<body class="admin-login">
+		<div class="admin-login-card">
+			<h1>Admin Login</h1>
+			<p class="admin-help">Sign in to manage site pages.</p>
+			<form id="login-form" class="admin-form">
+				<label>
+					Username
+					<input type="text" name="username" autocomplete="username" required />
+				</label>
+				<label>
+					Password
+					<input type="password" name="password" autocomplete="current-password" required />
+				</label>
+				<div id="login-message" hidden></div>
+				<button class="admin-button" type="submit">Log in</button>
+			</form>
+		</div>
+	</body>
+</html>
+
+<style is:global>
+	@import '../../styles/admin.css';
+</style>
+
+<script>
+	const form = document.getElementById('login-form') as HTMLFormElement;
+	const message = document.getElementById('login-message') as HTMLDivElement;
+
+	form.addEventListener('submit', async (event) => {
+		event.preventDefault();
+		message.hidden = true;
+
+		const formData = new FormData(form);
+		const response = await fetch('/api/auth/login', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				username: String(formData.get('username') ?? ''),
+				password: String(formData.get('password') ?? ''),
+			}),
+		});
+
+		if (response.ok) {
+			window.location.href = '/admin/pages';
+			return;
+		}
+
+		message.textContent = 'Invalid username or password.';
+		message.className = 'admin-message error';
+		message.hidden = false;
+	});
+</script>

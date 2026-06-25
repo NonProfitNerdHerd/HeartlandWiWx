@@ -5,7 +5,9 @@ menuLabel: Home
 showInMenu: true
 menuOrder: 1
 seoTitle: Heartland Chasers | Midwest Storm Chasing
-seoDescription: Heartland Chasers follows Ike and Jess across the Midwest documenting severe weather, storm chasing, and community stories.
+description: Heartland Chasers follows Ike and Jess across the Midwest documenting severe weather, storm chasing, and community stories.
+published: true
+updatedAt: "2026-06-23"
 ---
 
 # Heartland Chasers

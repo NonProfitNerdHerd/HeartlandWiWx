@@ -6,7 +6,7 @@ import { getPageBySlug, getSiteSettings } from '../lib/content';
 const page = getPageBySlug('home');
 
 if (!page) {
-	throw new Error('Missing home page content at content/pages/home.md');
+	throw new Error('Missing home page content at src/content/pages/home.md');
 }
 
 const settings = getSiteSettings();
@@ -14,7 +14,7 @@ const settings = getSiteSettings();
 
 <Layout
 	title={page.seoTitle || `${settings.siteTitle} | Midwest Storm Chasing`}
-	description={page.seoDescription || settings.tagline}
+	description={page.description || page.seoDescription || settings.tagline}
 >
 	<Nav slot="nav" />
 

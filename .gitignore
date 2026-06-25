@@ -1,5 +1,6 @@
 # build output
 dist/
+.vercel/
 
 # generated types
 .astro/
@@ -17,11 +18,6 @@ pnpm-debug.log*
 .env
 .env.production
 .env.local
-
-# TinaCMS generated output
-admin/
-public/admin/
-tina/__generated__/
 
 # macOS-specific files
 .DS_Store
