@@ -46,7 +46,8 @@ export type NavMenu = keyof typeof PATHS;
 
 export async function getNavigation(menu: NavMenu): Promise<{ nav: NavigationConfig; sha?: string }> {
 	const defaults = menu === 'header' ? DEFAULT_HEADER_NAV : menu === 'footer' ? DEFAULT_FOOTER_NAV : DEFAULT_MOBILE_NAV;
-	return readJsonFile(PATHS[menu], defaults);
+	const { data, sha } = await readJsonFile(PATHS[menu], defaults);
+	return { nav: data, sha };
 }
 
 export async function saveNavigation(menu: NavMenu, nav: NavigationConfig, sha?: string): Promise<void> {

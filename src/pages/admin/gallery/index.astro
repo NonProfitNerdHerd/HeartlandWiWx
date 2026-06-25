@@ -9,7 +9,7 @@ import { GALLERY_PAGE_SLUG } from '../../../lib/content';
 
 const page = await getPageDocument(GALLERY_PAGE_SLUG);
 const globalBlocks = await getGlobalBlocks();
-const globalBlockOptions = globalBlocks.config.blocks.map((b) => ({ id: b.id, name: b.name }));
+const globalBlockOptions = (globalBlocks.config?.blocks ?? []).map((b) => ({ id: b.id, name: b.name }));
 
 if (!page) {
 	return Astro.redirect('/admin/pages');
@@ -17,7 +17,7 @@ if (!page) {
 ---
 
 <AdminLayout title="Gallery" activeTab="gallery" wide>
-	<PageEditor client:load initialDocument={page.doc} originalSlug={GALLERY_PAGE_SLUG} backUrl="/admin/gallery" globalBlockOptions={globalBlockOptions} />
+	<PageEditor client:only="react" initialDocument={page.doc} originalSlug={GALLERY_PAGE_SLUG} backUrl="/admin/gallery" globalBlockOptions={globalBlockOptions} />
 </AdminLayout>
 
 <style is:global>

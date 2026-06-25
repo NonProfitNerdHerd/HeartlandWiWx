@@ -61,7 +61,8 @@ export const DEFAULT_SITE_TEXT: SiteTextLabels = {
 const SITE_TEXT_PATH = 'content/site-text/labels.json';
 
 export async function getSiteText(): Promise<{ labels: SiteTextLabels; sha?: string }> {
-	return readJsonFile(SITE_TEXT_PATH, DEFAULT_SITE_TEXT);
+	const { data, sha } = await readJsonFile(SITE_TEXT_PATH, DEFAULT_SITE_TEXT);
+	return { labels: data, sha };
 }
 
 export async function saveSiteText(labels: SiteTextLabels, sha?: string): Promise<void> {

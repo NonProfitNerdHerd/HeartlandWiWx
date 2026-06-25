@@ -63,7 +63,8 @@ export const DEFAULT_GLOBAL_BLOCKS: GlobalBlocksConfig = {
 const GLOBAL_BLOCKS_PATH = 'content/global-blocks/blocks.json';
 
 export async function getGlobalBlocks(): Promise<{ config: GlobalBlocksConfig; sha?: string }> {
-	return readJsonFile(GLOBAL_BLOCKS_PATH, DEFAULT_GLOBAL_BLOCKS);
+	const { data, sha } = await readJsonFile(GLOBAL_BLOCKS_PATH, DEFAULT_GLOBAL_BLOCKS);
+	return { config: data, sha };
 }
 
 export async function saveGlobalBlocks(config: GlobalBlocksConfig, sha?: string): Promise<void> {

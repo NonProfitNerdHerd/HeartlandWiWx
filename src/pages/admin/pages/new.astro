@@ -7,7 +7,7 @@ import { getGlobalBlocks } from '../../../lib/global-blocks';
 import type { PageDocument } from '../../../types/blocks';
 
 const globalBlocks = await getGlobalBlocks();
-const globalBlockOptions = globalBlocks.config.blocks.map((b) => ({ id: b.id, name: b.name }));
+const globalBlockOptions = (globalBlocks.config?.blocks ?? []).map((b) => ({ id: b.id, name: b.name }));
 
 const newDoc: PageDocument = {
 	meta: {
@@ -28,7 +28,7 @@ const newDoc: PageDocument = {
 ---
 
 <AdminLayout title="New Page" activeTab="pages" wide>
-	<PageEditor client:load initialDocument={newDoc} originalSlug="new" globalBlockOptions={globalBlockOptions} />
+	<PageEditor client:only="react" initialDocument={newDoc} originalSlug="new" globalBlockOptions={globalBlockOptions} />
 </AdminLayout>
 
 <style is:global>

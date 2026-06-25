@@ -6,6 +6,7 @@ import { listBlogPosts } from '../../../lib/blog';
 import { getPageDocument } from '../../../lib/page-document';
 import { BLOG_INDEX_PAGE_SLUG } from '../../../lib/content';
 
+const posts = await listBlogPosts();
 const landingPage = await getPageDocument(BLOG_INDEX_PAGE_SLUG);
 ---
 

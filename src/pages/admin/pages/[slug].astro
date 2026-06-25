@@ -14,11 +14,11 @@ if (!page) {
 	return Astro.redirect('/admin/pages');
 }
 
-const globalBlockOptions = globalBlocks.config.blocks.map((b) => ({ id: b.id, name: b.name }));
+const globalBlockOptions = (globalBlocks.config?.blocks ?? []).map((b) => ({ id: b.id, name: b.name }));
 ---
 
 <AdminLayout title={`Edit ${page.doc.meta.title}`} activeTab="pages" wide>
-	<PageEditor client:load initialDocument={page.doc} originalSlug={slug} globalBlockOptions={globalBlockOptions} />
+	<PageEditor client:only="react" initialDocument={page.doc} originalSlug={slug} globalBlockOptions={globalBlockOptions} />
 </AdminLayout>
 
 <style is:global>

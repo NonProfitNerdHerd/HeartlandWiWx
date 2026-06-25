@@ -110,7 +110,8 @@ export const DEFAULT_THEME: ThemeConfig = {
 const THEME_PATH = 'content/theme/theme.json';
 
 export async function getTheme(): Promise<{ theme: ThemeConfig; sha?: string }> {
-	return readJsonFile(THEME_PATH, DEFAULT_THEME);
+	const { data, sha } = await readJsonFile(THEME_PATH, DEFAULT_THEME);
+	return { theme: data, sha };
 }
 
 export async function saveTheme(theme: ThemeConfig, sha?: string): Promise<void> {

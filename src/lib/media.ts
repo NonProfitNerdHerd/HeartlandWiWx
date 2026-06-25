@@ -26,7 +26,8 @@ export const DEFAULT_MEDIA: MediaLibrary = {
 const MEDIA_PATH = 'content/media/library.json';
 
 export async function getMediaLibrary(): Promise<{ library: MediaLibrary; sha?: string }> {
-	return readJsonFile(MEDIA_PATH, DEFAULT_MEDIA);
+	const { data, sha } = await readJsonFile(MEDIA_PATH, DEFAULT_MEDIA);
+	return { library: data, sha };
 }
 
 export async function saveMediaLibrary(library: MediaLibrary, sha?: string): Promise<void> {
