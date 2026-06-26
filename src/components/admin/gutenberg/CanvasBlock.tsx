@@ -1,6 +1,13 @@
 import { memo, useEffect, useState } from 'react';
 import { getBlockDefinition } from '../../../lib/blocks/registry';
 import { getBlockSpacingStyle, isColumnsBlock, normalizeColumnsBlock } from '../../../lib/blocks/columns';
+import {
+	blockWidthClass,
+	getBlockWidth,
+	getTextAlign,
+	getVerticalAlign,
+	heroBackgroundPosition,
+} from '../../../lib/blocks/layout';
 import type { Block, EditorMode } from '../../../types/blocks';
 import InlineRichText from './InlineRichText';
 import ColumnsCanvas from './ColumnsCanvas';
@@ -112,10 +119,35 @@ function CanvasBlockInner({
 
 		if (block.type === 'hero' || block.type === 'splitHero' || block.type === 'minimalHero') {
 			const image = String(block.props.image ?? '');
+			const align = getTextAlign(block.props.align);
+			const valign = getVerticalAlign(block.props.valign);
+			const focusX = Number(block.props.imageFocusX ?? 50);
+			const focusY = Number(block.props.imageFocusY ?? 50);
+			const heroStyle: React.CSSProperties = {
+				...(image ? { backgroundImage: `url(${image})` } : {}),
+				backgroundPosition: heroBackgroundPosition(focusX, focusY),
+			};
+
+			if (block.type === 'splitHero' && image) {
+				return (
+					<section className={`block-hero gb-canvas-hero splitHero block-hero-align-${align} block-hero-valign-${valign}`}>
+						<div className="block-hero-split-image" style={{ backgroundImage: `url(${image})`, backgroundPosition: heroBackgroundPosition(focusX, focusY) }} />
+						<div className="block-hero-inner">
+							<h1 contentEditable suppressContentEditableWarning onBlur={(e) => onChange({ ...block, props: { ...block.props, title: e.currentTarget.textContent ?? '' } })}>
+								{String(block.props.title ?? 'Hero Title')}
+							</h1>
+							<p contentEditable suppressContentEditableWarning onBlur={(e) => onChange({ ...block, props: { ...block.props, subtitle: e.currentTarget.textContent ?? '' } })}>
+								{String(block.props.subtitle ?? '')}
+							</p>
+						</div>
+					</section>
+				);
+			}
+
 			return (
 				<section
-					className={`block-hero gb-canvas-hero ${block.type}`}
-					style={image ? { backgroundImage: `url(${image})` } : undefined}
+					className={`block-hero gb-canvas-hero ${block.type} block-hero-align-${align} block-hero-valign-${valign}`}
+					style={heroStyle}
 				>
 					<div className="block-hero-inner">
 						<h1 contentEditable suppressContentEditableWarning onBlur={(e) => onChange({ ...block, props: { ...block.props, title: e.currentTarget.textContent ?? '' } })}>
@@ -192,9 +224,11 @@ function CanvasBlockInner({
 		return <div className="gb-canvas-placeholder">{def?.label ?? block.type}</div>;
 	};
 
+	const widthClass = blockWidthClass(getBlockWidth(block.props.width));
+
 	return (
 		<div
-			className={`gb-canvas-block ${showChrome ? 'is-visible' : ''} ${isSelected ? 'is-selected' : ''} ${structureMode === 'structure' ? 'is-structure' : ''}`}
+			className={`gb-canvas-block ${widthClass} ${showChrome ? 'is-visible' : ''} ${isSelected ? 'is-selected' : ''} ${structureMode === 'structure' ? 'is-structure' : ''}`}
 			data-block-id={block.id}
 			data-block-type={block.type}
 			style={getBlockSpacingStyle(block.props)}

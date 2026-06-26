@@ -7,6 +7,12 @@ import {
 	normalizeColumnsBlock,
 	spacingStyleAttr,
 } from './columns';
+import {
+	blockWidthClass,
+	getBlockWidth,
+	heroBackgroundPosition,
+	heroClassAttr,
+} from './layout';
 
 marked.setOptions({ gfm: true, breaks: true });
 
@@ -133,14 +139,23 @@ export function renderBlockHtml(block: Block, globalBlocks?: Record<string, Bloc
 		);
 	}
 
-	if (block.type === 'hero') {
+	if (block.type === 'hero' || block.type === 'splitHero' || block.type === 'minimalHero') {
 		const title = String(block.props.title ?? '');
 		const subtitle = String(block.props.subtitle ?? '');
 		const image = String(block.props.image ?? '');
-		return wrapWithSpacing(
-			`<section class="block-hero" ${image ? `style="background-image:url(${image})"` : ''}><div class="block-hero-inner"><h1>${escapeHtml(title)}</h1>${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}</div></section>`,
-			block.props,
-		);
+		const focus = heroBackgroundPosition(block.props.imageFocusX, block.props.imageFocusY);
+		const classes = heroClassAttr(block.props.align, block.props.valign, block.props.width);
+		const spacing = spacingStyleAttr(block.props);
+		const styleParts = [spacing, image ? `background-position:${focus}` : ''].filter(Boolean).join(';');
+
+		if (block.type === 'splitHero' && image) {
+			const inner = `<div class="block-hero-split-image" style="background-image:url(${image});background-position:${focus}"></div><div class="block-hero-inner"><h1>${escapeHtml(title)}</h1>${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}</div>`;
+			return wrapWithSpacing(`<section class="${classes} splitHero">${inner}</section>`, block.props);
+		}
+
+		const bg = image ? `background-image:url(${image});background-size:cover;background-position:${focus}` : '';
+		const combinedStyle = [bg, styleParts].filter(Boolean).join(';');
+		return `<section class="${classes}"${combinedStyle ? ` style="${combinedStyle}"` : ''}><div class="block-hero-inner"><h1>${escapeHtml(title)}</h1>${subtitle && block.type !== 'minimalHero' ? `<p>${escapeHtml(subtitle)}</p>` : ''}</div></section>`;
 	}
 
 	if (block.type === 'alert' || block.type === 'callout') {
@@ -167,10 +182,11 @@ export function renderBlockHtml(block: Block, globalBlocks?: Record<string, Bloc
 		const normalized = normalizeColumnsBlock(block);
 		const cols = getColumnsCount(normalized);
 		const gap = getColumnGap(normalized);
+		const width = getBlockWidth(normalized.props.width);
 		const spacing = spacingStyleAttr(normalized.props);
 		const style = [`gap:${gap}px`, spacing].filter(Boolean).join(';');
 		const columns = normalized.children ?? [];
-		return `<div class="block-columns block-columns-${cols}"${style ? ` style="${style}"` : ''}>${columns
+		return `<div class="block-columns block-columns-${cols} ${blockWidthClass(width)}"${style ? ` style="${style}"` : ''}>${columns
 			.map((col) => {
 				const inner = (col.children ?? []).map((c) => renderBlockHtml(c, globalBlocks)).join('');
 				return `<div class="block-column">${inner}</div>`;

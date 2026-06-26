@@ -1,6 +1,7 @@
 import type { Block } from '../../../types/blocks';
 import { getColumnsCount, getColumnGap, resizeColumnsBlock } from '../../../lib/blocks/columns';
 import SpacingSettings from './SpacingSettings';
+import WidthSettings from './WidthSettings';
 
 interface Props {
 	block: Block;
@@ -13,6 +14,7 @@ export default function ColumnsSettings({ block, onChange }: Props) {
 
 	return (
 		<div className="gb-settings-fields">
+			<WidthSettings block={block} onChange={onChange} />
 			<label>
 				Columns
 				<select
