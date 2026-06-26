@@ -169,7 +169,7 @@ export default function GutenbergEditor({
 	const contentLabel = contentType === 'post' ? 'Post' : 'Page';
 
 	return (
-		<div className="gb-editor">
+		<>
 			{recoveryPrompt && (
 				<div className="gb-recovery-banner">
 					<span>A newer draft was found ({new Date(recoveryPrompt.savedAt).toLocaleString()}).</span>
@@ -178,6 +178,7 @@ export default function GutenbergEditor({
 				</div>
 			)}
 
+			<div className="gb-editor">
 			<LeftSidebar
 				tab={leftTab}
 				onTabChange={setLeftTab}
@@ -226,6 +227,7 @@ export default function GutenbergEditor({
 				revisions={revisions}
 				onRestoreRevision={restoreRevision}
 			/>
-		</div>
+			</div>
+		</>
 	);
 }
