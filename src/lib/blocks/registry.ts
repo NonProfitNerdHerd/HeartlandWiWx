@@ -1,5 +1,6 @@
 import type { BlockDefinition } from '../types/blocks';
 import { createColumnWrapper } from './columns';
+import { DEFAULT_CARD_PROPS } from './card';
 
 export const GUTENBERG_CATEGORIES = [
 	'Basic',
@@ -25,15 +26,16 @@ export const COMMON_BLOCK_TYPES = [
 	'quote',
 	'divider',
 	'spacer',
-	'gallery',
+	'form',
+	'card',
 	'embed',
 ] as const;
 
 export const RECENT_BLOCKS_LIMIT = 6;
 
 export const BLOCK_DEFINITIONS: BlockDefinition[] = [
-	{ type: 'paragraph', label: 'Paragraph', category: 'Basic', icon: '¶', description: 'Start with the building block of all narrative.', keywords: ['text', 'p'], defaultContent: '<p></p>' },
-	{ type: 'heading', label: 'Heading', category: 'Basic', icon: 'H', description: 'Introduce new sections and organize content.', keywords: ['title', 'h1', 'h2'], defaultProps: { level: 2 }, defaultContent: '<h2>Heading</h2>' },
+	{ type: 'paragraph', label: 'Paragraph', category: 'Basic', icon: '¶', description: 'Start with the building block of all narrative.', keywords: ['text', 'p'], defaultProps: { textAlign: 'left', fontSize: 'medium' }, defaultContent: '<p></p>' },
+	{ type: 'heading', label: 'Heading', category: 'Basic', icon: 'H', description: 'Introduce new sections and organize content.', keywords: ['title', 'h1', 'h2'], defaultProps: { level: 2, textAlign: 'left', fontSize: 'medium' }, defaultContent: '<h2>Heading</h2>' },
 	{ type: 'bulletList', label: 'List', category: 'Basic', icon: '•', description: 'Create a bulleted or numbered list.', keywords: ['ul', 'ol'], defaultContent: '<ul><li>Item</li></ul>' },
 	{ type: 'orderedList', label: 'Numbered List', category: 'Basic', icon: '1.', description: 'An ordered list of items.', keywords: ['ol'], defaultContent: '<ol><li>Item</li></ol>' },
 	{ type: 'quote', label: 'Quote', category: 'Basic', icon: '"', description: 'Give quoted text visual emphasis.', keywords: ['blockquote'], defaultContent: '<blockquote><p>Quote text</p></blockquote>' },
@@ -41,10 +43,10 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
 	{ type: 'table', label: 'Table', category: 'Basic', icon: '⊞', description: 'Insert a table for sharing data.', keywords: ['grid'], defaultContent: '<table><tr><th>Col</th></tr><tr><td>Data</td></tr></table>' },
 	{ type: 'divider', label: 'Separator', category: 'Basic', icon: '—', description: 'Create a break between ideas with a horizontal line.', keywords: ['hr', 'line'] },
 	{ type: 'spacer', label: 'Spacer', category: 'Basic', icon: '↕', description: 'Add white space between blocks.', keywords: ['space'], defaultProps: { height: 48 } },
-	{ type: 'button', label: 'Button', category: 'Basic', icon: 'Btn', description: 'Prompt visitors to take action with a button.', keywords: ['cta', 'link'], defaultProps: { label: 'Click me', href: '/', variant: 'primary' } },
+	{ type: 'button', label: 'Button', category: 'Basic', icon: 'Btn', description: 'Prompt visitors to take action with a button.', keywords: ['cta', 'link'], defaultProps: { label: 'Click me', href: '/', variant: 'primary', align: 'left', target: 'same' } },
 	{ type: 'alert', label: 'Notice', category: 'Basic', icon: '!', description: 'Highlight important information.', keywords: ['info', 'warning'], defaultProps: { variant: 'info' }, defaultContent: '<p>Notice message</p>' },
 	{ type: 'callout', label: 'Callout', category: 'Basic', icon: '💡', description: 'Draw attention to a key detail.', keywords: ['note', 'tip'], defaultProps: { title: 'Note' }, defaultContent: '<p>Callout text</p>' },
-	{ type: 'card', label: 'Card', category: 'Basic', icon: '▭', description: 'A card with title and body content.', keywords: ['box'], defaultProps: { title: 'Card' }, defaultContent: '<p>Card body</p>' },
+	{ type: 'card', label: 'Card', category: 'Basic', icon: '▭', description: 'A flexible card with image, text, and button.', keywords: ['box'], defaultProps: { ...DEFAULT_CARD_PROPS } },
 	{ type: 'featureCard', label: 'Feature', category: 'Basic', icon: '✦', description: 'Highlight a feature with icon and text.', keywords: ['icon'], defaultProps: { title: 'Feature', icon: '★' }, defaultContent: '<p>Description</p>' },
 	{ type: 'ctaBanner', label: 'Call to Action', category: 'Basic', icon: '→', description: 'A banner prompting visitors to act.', keywords: ['cta'], defaultProps: { title: 'Call to action', buttonLabel: 'Learn more', href: '/' } },
 	{ type: 'hero', label: 'Cover', category: 'Basic', icon: '★', description: 'A hero section with title and background.', keywords: ['banner', 'cover'], defaultProps: { title: 'Hero Title', subtitle: '', image: '', align: 'center', valign: 'middle', width: 'standard', imageFocusX: 50, imageFocusY: 50 } },
@@ -76,6 +78,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
 	{ type: 'resourceList', label: 'Resources', category: 'Organization', icon: '📋', description: 'A list of linked resources.', keywords: ['links'], defaultProps: { items: [] } },
 	{ type: 'downloadList', label: 'Downloads', category: 'Organization', icon: '↓', description: 'A list of downloadable files.', keywords: ['files'], defaultProps: { items: [] } },
 	{ type: 'faq', label: 'FAQ', category: 'Organization', icon: '?', description: 'Frequently asked questions in accordion style.', keywords: ['questions'], defaultProps: { items: [{ q: 'Question?', a: 'Answer.' }] } },
+	{ type: 'form', label: 'Form', category: 'Interactive', icon: '📝', description: 'Insert a form created in the Forms builder.', keywords: ['contact', 'survey'], defaultProps: { formId: '' } },
 	{ type: 'poll', label: 'Poll', category: 'Interactive', icon: '📊', description: 'Let visitors vote on a question.', keywords: ['vote'], defaultProps: { question: '', options: [] } },
 	{ type: 'survey', label: 'Survey', category: 'Interactive', icon: '📝', description: 'Collect responses with a form.', keywords: ['form'], defaultProps: { fields: [] } },
 	{ type: 'countdown', label: 'Countdown', category: 'Interactive', icon: '⏱', description: 'Display a countdown to a date.', keywords: ['timer'], defaultProps: { targetDate: '' } },

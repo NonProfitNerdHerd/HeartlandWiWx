@@ -16,7 +16,7 @@ const RESERVED_PAGE_SLUGS = new Set(['home', BLOG_INDEX_PAGE_SLUG]);
 
 function postDocToChaseReport(doc: import('../types/blocks').PostDocument, filename: string): ChaseReport {
 	const globalBlocks = globalBlocksMap(getGlobalBlocksForBuild());
-	const html = renderBlocks(doc.blocks, globalBlocks);
+	const html = renderBlocks(doc.blocks, globalBlocks, doc.meta.slug);
 	return {
 		title: doc.meta.title,
 		slug: doc.meta.slug,
@@ -70,7 +70,7 @@ function pageDocToView(slug: string): PageView | undefined {
 	if (!doc || !doc.meta.published || doc.meta.draft) return undefined;
 
 	const globalBlocks = globalBlocksMap(getGlobalBlocksForBuild());
-	const html = renderBlocks(doc.blocks, globalBlocks);
+	const html = renderBlocks(doc.blocks, globalBlocks, slug);
 
 	return {
 		title: doc.meta.title,

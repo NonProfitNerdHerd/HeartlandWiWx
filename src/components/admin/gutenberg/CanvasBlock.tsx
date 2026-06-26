@@ -8,13 +8,16 @@ import {
 	getVerticalAlign,
 	heroBackgroundPosition,
 } from '../../../lib/blocks/layout';
+import { typographyStyleObject } from '../../../lib/blocks/typography';
 import type { Block, EditorMode } from '../../../types/blocks';
 import InlineRichText from './InlineRichText';
 import ColumnsCanvas from './ColumnsCanvas';
+import CardCanvas from './CardCanvas';
+import FormCanvas from './FormCanvas';
 
 const TEXT_BLOCKS = new Set([
 	'paragraph', 'heading', 'bulletList', 'orderedList', 'quote', 'codeBlock',
-	'alert', 'callout', 'card', 'featureCard', 'html', 'markdown',
+	'alert', 'callout', 'featureCard', 'html', 'markdown',
 ]);
 
 const LAYOUT_WITH_CHILDREN = new Set([
@@ -79,6 +82,32 @@ function CanvasBlockInner({
 	};
 
 	const renderContent = () => {
+		if (block.type === 'paragraph' || block.type === 'heading') {
+			return (
+				<div className={`gb-typography-wrap gb-block-${block.type}`} style={typographyStyleObject(block.props)}>
+					<InlineRichText
+						content={block.content ?? def?.defaultContent ?? (block.type === 'heading' ? '<h2>Heading</h2>' : '<p></p>')}
+						onChange={(html) => onChange({ ...block, content: html })}
+						onEnter={() => onEnterAfter(block.id)}
+						onSlash={(q, rect) => onSlash(block.id, q, rect)}
+						onSlashClose={onSlashClose}
+						onFocus={() => onSelect(block.id)}
+						placeholder={block.type === 'heading' ? 'Heading' : 'Type / to choose a block'}
+						className={`gb-block-${block.type}`}
+						autoFocus={autoFocus}
+					/>
+				</div>
+			);
+		}
+
+		if (block.type === 'card') {
+			return <CardCanvas block={block} />;
+		}
+
+		if (block.type === 'form') {
+			return <FormCanvas formId={String(block.props.formId ?? '')} />;
+		}
+
 		if (TEXT_BLOCKS.has(block.type)) {
 			return (
 				<InlineRichText
@@ -97,10 +126,21 @@ function CanvasBlockInner({
 
 		if (block.type === 'button') {
 			const variant = String(block.props.variant ?? 'primary');
+			const align = String(block.props.align ?? 'left');
+			const target = block.props.target === 'new' ? '_blank' : undefined;
+			const rel = target ? 'noopener noreferrer' : undefined;
 			return (
-				<a className={`btn btn-${variant} gb-canvas-button`} href={String(block.props.href ?? '#')} onClick={(e) => e.preventDefault()}>
-					{String(block.props.label ?? 'Button')}
-				</a>
+				<div className={`block-button-wrap block-button-align-${align}`}>
+					<a
+						className={`btn btn-${variant} gb-canvas-button`}
+						href={String(block.props.href ?? '#')}
+						target={target}
+						rel={rel}
+						onClick={(e) => e.preventDefault()}
+					>
+						{String(block.props.label ?? 'Button')}
+					</a>
+				</div>
 			);
 		}
 

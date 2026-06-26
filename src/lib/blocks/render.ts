@@ -13,6 +13,14 @@ import {
 	heroBackgroundPosition,
 	heroClassAttr,
 } from './layout';
+import { renderCardHtml } from './card';
+import { renderFormHtml } from './form';
+import {
+	blockAlignClass,
+	getBlockAlign,
+	linkTargetAttrs,
+	typographyStyleAttr,
+} from './typography';
 
 marked.setOptions({ gfm: true, breaks: true });
 
@@ -96,11 +104,11 @@ function wrapWithSpacing(html: string, props: Record<string, unknown>): string {
 	return `<div style="${spacing}">${html}</div>`;
 }
 
-export function renderBlockHtml(block: Block, globalBlocks?: Record<string, Block[]>): string {
+export function renderBlockHtml(block: Block, globalBlocks?: Record<string, Block[]>, pageSlug?: string): string {
 	if (block.type === 'globalBlock' && globalBlocks) {
 		const blockId = String(block.props.blockId ?? '');
 		const nested = globalBlocks[blockId] ?? [];
-		return nested.map((b) => renderBlockHtml(b, globalBlocks)).join('\n');
+		return nested.map((b) => renderBlockHtml(b, globalBlocks, pageSlug)).join('\n');
 	}
 
 	if (block.type === 'markdown') {
@@ -125,7 +133,29 @@ export function renderBlockHtml(block: Block, globalBlocks?: Record<string, Bloc
 		const label = String(block.props.label ?? 'Button');
 		const href = String(block.props.href ?? '#');
 		const variant = String(block.props.variant ?? 'primary');
-		return wrapWithSpacing(`<a class="btn btn-${variant}" href="${href}">${escapeHtml(label)}</a>`, block.props);
+		const align = getBlockAlign(block.props.align);
+		const btn = `<a class="btn btn-${variant}" href="${href}"${linkTargetAttrs(block.props.target)}>${escapeHtml(label)}</a>`;
+		const inner = `<div class="block-button-wrap ${blockAlignClass('block-button', align)}">${btn}</div>`;
+		return wrapWithSpacing(inner, block.props);
+	}
+
+	if (block.type === 'card') {
+		return wrapWithSpacing(renderCardHtml(block), block.props);
+	}
+
+	if (block.type === 'form') {
+		const formId = String(block.props.formId ?? '');
+		return wrapWithSpacing(renderFormHtml(formId, pageSlug), block.props);
+	}
+
+	if (block.type === 'paragraph' || block.type === 'heading') {
+		const typo = typographyStyleAttr(block.props);
+		const spacing = spacingStyleAttr(block.props);
+		const style = [typo, spacing].filter(Boolean).join(';');
+		const content = block.content ?? '';
+		if (!content) return '';
+		if (style) return `<div style="${style}">${content}</div>`;
+		return content;
 	}
 
 	if (block.type === 'image') {
@@ -175,7 +205,7 @@ export function renderBlockHtml(block: Block, globalBlocks?: Record<string, Bloc
 	}
 
 	if (block.type === 'column') {
-		return (block.children ?? []).map((c) => renderBlockHtml(c, globalBlocks)).join('');
+		return (block.children ?? []).map((c) => renderBlockHtml(c, globalBlocks, pageSlug)).join('');
 	}
 
 	if (isColumnsBlock(block.type)) {
@@ -188,14 +218,14 @@ export function renderBlockHtml(block: Block, globalBlocks?: Record<string, Bloc
 		const columns = normalized.children ?? [];
 		return `<div class="block-columns block-columns-${cols} ${blockWidthClass(width)}"${style ? ` style="${style}"` : ''}>${columns
 			.map((col) => {
-				const inner = (col.children ?? []).map((c) => renderBlockHtml(c, globalBlocks)).join('');
+				const inner = (col.children ?? []).map((c) => renderBlockHtml(c, globalBlocks, pageSlug)).join('');
 				return `<div class="block-column">${inner}</div>`;
 			})
 			.join('')}</div>`;
 	}
 
 	if (block.type === 'container' || block.type === 'oneColumn') {
-		const inner = (block.children ?? []).map((c) => renderBlockHtml(c, globalBlocks)).join('');
+		const inner = (block.children ?? []).map((c) => renderBlockHtml(c, globalBlocks, pageSlug)).join('');
 		const spacing = spacingStyleAttr(block.props);
 		return `<div class="block-container"${spacing ? ` style="${spacing}"` : ''}>${inner}</div>`;
 	}
@@ -207,6 +237,6 @@ export function renderBlockHtml(block: Block, globalBlocks?: Record<string, Bloc
 	return '';
 }
 
-export function renderBlocks(blocks: Block[], globalBlocks?: Record<string, Block[]>): string {
-	return blocks.map((b) => renderBlockHtml(b, globalBlocks)).join('\n');
+export function renderBlocks(blocks: Block[], globalBlocks?: Record<string, Block[]>, pageSlug?: string): string {
+	return blocks.map((b) => renderBlockHtml(b, globalBlocks, pageSlug)).join('\n');
 }

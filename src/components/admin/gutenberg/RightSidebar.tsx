@@ -11,6 +11,7 @@ interface Props {
 	selectedId: string | null;
 	onBlockChange: (id: string, block: Block) => void;
 	globalBlockOptions: { id: string; name: string }[];
+	formOptions?: { id: string; name: string }[];
 	revisions?: { timestamp: number; label: string }[];
 	onRestoreRevision?: (timestamp: number) => void;
 }
@@ -34,6 +35,7 @@ export default function RightSidebar({
 	selectedId,
 	onBlockChange,
 	globalBlockOptions,
+	formOptions = [],
 	revisions = [],
 	onRestoreRevision,
 }: Props) {
@@ -63,6 +65,7 @@ export default function RightSidebar({
 						block={selectedBlock}
 						onChange={(b) => onBlockChange(selectedBlock.id, b)}
 						globalBlockOptions={globalBlockOptions}
+						formOptions={formOptions}
 					/>
 				) : (
 					<div className="gb-settings-fields">

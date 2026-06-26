@@ -1378,3 +1378,30 @@ body.admin-wide {
 		border-top: 1px solid #e0e0e0;
 	}
 }
+
+.block-button-wrap {
+	display: flex;
+	width: 100%;
+}
+
+.block-button-align-left { justify-content: flex-start; }
+.block-button-align-center { justify-content: center; }
+.block-button-align-right { justify-content: flex-end; }
+
+.gb-canvas-form-label {
+	font-size: 12px;
+	color: #757575;
+	margin: 0 0 8px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.cms-form-preview .cms-form-field input,
+.cms-form-preview .cms-form-field textarea,
+.cms-form-preview .cms-form-field select {
+	opacity: 0.85;
+}
+
+.block-card-canvas .block-card {
+	margin: 0;
+}

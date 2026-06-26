@@ -28,6 +28,7 @@ interface Props {
 	contentType: ContentType;
 	slug: string;
 	globalBlockOptions?: { id: string; name: string }[];
+	formOptions?: { id: string; name: string }[];
 	device: PreviewDevice;
 	structureMode: EditorMode;
 	canUndo: boolean;
@@ -42,6 +43,7 @@ export default function GutenbergEditor({
 	contentType,
 	slug,
 	globalBlockOptions = [],
+	formOptions: formOptionsProp = [],
 	device,
 	structureMode,
 	canUndo,
@@ -55,12 +57,30 @@ export default function GutenbergEditor({
 	const [sidebarInsertIndex, setSidebarInsertIndex] = useState<number | null>(null);
 	const [dragBlockType, setDragBlockType] = useState<string | null>(null);
 	const [dirty, setDirty] = useState(false);
+	const [formOptions, setFormOptions] = useState(formOptionsProp);
 	const [recoveryPrompt, setRecoveryPrompt] = useState<{ savedAt: number; doc: EditorDocument } | null>(null);
 
 	const { favorites, recent, toggleFavorite, recordRecent } = useBlockPreferences();
 	useAutosave(slug, doc, dirty);
 
 	const blocks = useMemo(() => ensureParagraphIfEmpty(doc.blocks), [doc.blocks]);
+
+	useEffect(() => {
+		if (formOptionsProp.length) {
+			setFormOptions(formOptionsProp);
+			return;
+		}
+		fetch('/api/forms')
+			.then((r) => r.json())
+			.then((data) => {
+				const opts = (data.library?.forms ?? []).map((f: { id: string; name: string }) => ({
+					id: f.id,
+					name: f.name,
+				}));
+				setFormOptions(opts);
+			})
+			.catch(() => {});
+	}, [formOptionsProp]);
 
 	useEffect(() => {
 		const draft = getDraftRecovery(slug);
@@ -224,6 +244,7 @@ export default function GutenbergEditor({
 				selectedId={selectedId}
 				onBlockChange={handleBlockChange}
 				globalBlockOptions={globalBlockOptions}
+				formOptions={formOptions}
 				revisions={revisions}
 				onRestoreRevision={restoreRevision}
 			/>

@@ -2,19 +2,26 @@ import type { ReactNode } from 'react';
 import { getBlockDefinition } from '../../../lib/blocks/registry';
 import { isColumnsBlock } from '../../../lib/blocks/columns';
 import type { Block } from '../../../types/blocks';
+import ButtonSettings from './ButtonSettings';
+import CardSettings from './CardSettings';
 import ColumnsSettings from './ColumnsSettings';
+import FormBlockSettings from './FormBlockSettings';
+import HeadingSettings from './HeadingSettings';
 import HeroSettings from './HeroSettings';
+import ParagraphSettings from './ParagraphSettings';
 import SpacingSettings from './SpacingSettings';
+import MediaPicker from './MediaPicker';
 
-const TEXT_BLOCKS = new Set([
-	'paragraph', 'heading', 'bulletList', 'orderedList', 'quote', 'codeBlock',
-	'alert', 'callout', 'card', 'featureCard', 'html', 'markdown',
+const RICH_TEXT_BLOCKS = new Set([
+	'bulletList', 'orderedList', 'quote', 'codeBlock',
+	'alert', 'callout', 'featureCard', 'html', 'markdown',
 ]);
 
 interface Props {
 	block: Block;
 	onChange: (block: Block) => void;
 	globalBlockOptions: { id: string; name: string }[];
+	formOptions?: { id: string; name: string }[];
 }
 
 function withSpacing(content: ReactNode, block: Block, onChange: (block: Block) => void) {
@@ -34,56 +41,35 @@ function withSpacing(content: ReactNode, block: Block, onChange: (block: Block) 
 	);
 }
 
-export default function BlockSettings({ block, onChange, globalBlockOptions }: Props) {
+export default function BlockSettings({ block, onChange, globalBlockOptions, formOptions = [] }: Props) {
 	const def = getBlockDefinition(block.type);
 
+	if (block.type === 'paragraph') {
+		return <ParagraphSettings block={block} onChange={onChange} />;
+	}
+
 	if (block.type === 'heading') {
-		return withSpacing(
-			<div className="gb-settings-fields">
-				<label>
-					Level
-					<select
-						value={Number(block.props.level ?? 2)}
-						onChange={(e) => onChange({ ...block, props: { ...block.props, level: Number(e.target.value) } })}
-					>
-						{[1, 2, 3, 4, 5, 6].map((l) => (
-							<option key={l} value={l}>H{l}</option>
-						))}
-					</select>
-				</label>
-			</div>,
-			block,
-			onChange,
-		);
+		return <HeadingSettings block={block} onChange={onChange} />;
 	}
 
 	if (block.type === 'button') {
-		return withSpacing(
-			<div className="gb-settings-fields">
-				<label>Label <input value={String(block.props.label ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, label: e.target.value } })} /></label>
-				<label>Link <input value={String(block.props.href ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, href: e.target.value } })} /></label>
-				<label>Style
-					<select value={String(block.props.variant ?? 'primary')} onChange={(e) => onChange({ ...block, props: { ...block.props, variant: e.target.value } })}>
-						<option value="primary">Primary</option>
-						<option value="secondary">Secondary</option>
-						<option value="outline">Outline</option>
-						<option value="ghost">Ghost</option>
-						<option value="danger">Danger</option>
-					</select>
-				</label>
-			</div>,
-			block,
-			onChange,
-		);
+		return <ButtonSettings block={block} onChange={onChange} />;
+	}
+
+	if (block.type === 'card') {
+		return <CardSettings block={block} onChange={onChange} />;
+	}
+
+	if (block.type === 'form') {
+		return <FormBlockSettings block={block} onChange={onChange} formOptions={formOptions} />;
 	}
 
 	if (block.type === 'image') {
 		return withSpacing(
 			<div className="gb-settings-fields">
-				<label>Image URL <input value={String(block.props.src ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, src: e.target.value } })} /></label>
+				<MediaPicker label="Image" value={String(block.props.src ?? '')} onChange={(url) => onChange({ ...block, props: { ...block.props, src: url } })} />
 				<label>Alt text <input value={String(block.props.alt ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, alt: e.target.value } })} /></label>
 				<label>Caption <input value={String(block.props.caption ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, caption: e.target.value } })} /></label>
-				{block.props.src ? <img src={String(block.props.src)} alt="" className="gb-settings-preview-img" /> : null}
 			</div>,
 			block,
 			onChange,
@@ -147,7 +133,7 @@ export default function BlockSettings({ block, onChange, globalBlockOptions }: P
 		return <ColumnsSettings block={block} onChange={onChange} />;
 	}
 
-	if (TEXT_BLOCKS.has(block.type)) {
+	if (RICH_TEXT_BLOCKS.has(block.type)) {
 		return withSpacing(
 			<p className="gb-settings-hint">Edit content directly on the canvas. Use the floating toolbar for formatting.</p>,
 			block,
