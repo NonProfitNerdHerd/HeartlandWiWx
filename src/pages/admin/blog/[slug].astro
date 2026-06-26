@@ -25,7 +25,9 @@ const globalBlockOptions = (globalBlocks.config?.blocks ?? []).map((b) => ({ id:
 		originalSlug={slug}
 		backUrl="/admin/blog"
 		globalBlockOptions={globalBlockOptions}
-	/>
+	>
+		<div slot="fallback" class="gb-editor-loading">Loading editor…</div>
+	</ContentEditor>
 </AdminLayout>
 
 <style is:global>

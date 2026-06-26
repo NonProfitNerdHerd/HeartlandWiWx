@@ -37,7 +37,9 @@ const newDoc: PostDocument = {
 		originalSlug="new"
 		backUrl="/admin/blog"
 		globalBlockOptions={globalBlockOptions}
-	/>
+	>
+		<div slot="fallback" class="gb-editor-loading">Loading editor…</div>
+	</ContentEditor>
 </AdminLayout>
 
 <style is:global>

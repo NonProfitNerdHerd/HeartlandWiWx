@@ -42,6 +42,14 @@ export default function EditorCanvas({
 }: Props) {
 	const [insertIndicator, setInsertIndicator] = useState<{ parentId: string | null; index: number } | null>(null);
 	const [popover, setPopover] = useState<InsertContext | null>(null);
+	const canvasRef = useRef<HTMLDivElement>(null);
+
+	const openPopover = useCallback(
+		(parentId: string | null, index: number, anchor: DOMRect, replaceBlockId?: string, query = '') => {
+			setPopover({ parentId, index, replaceBlockId, anchor, query });
+		},
+		[],
+	);
 
 	const closePopover = useCallback(() => setPopover(null), []);
 

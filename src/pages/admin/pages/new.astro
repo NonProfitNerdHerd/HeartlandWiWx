@@ -28,7 +28,9 @@ const newDoc: PageDocument = {
 ---
 
 <AdminLayout title="New Page" activeTab="pages" wide>
-	<PageEditor client:only="react" initialDocument={newDoc} originalSlug="new" globalBlockOptions={globalBlockOptions} />
+	<PageEditor client:only="react" initialDocument={newDoc} originalSlug="new" globalBlockOptions={globalBlockOptions}>
+		<div slot="fallback" class="gb-editor-loading">Loading editor…</div>
+	</PageEditor>
 </AdminLayout>
 
 <style is:global>

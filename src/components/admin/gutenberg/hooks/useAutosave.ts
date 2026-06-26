@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import type { EditorDocument } from '../../../types/blocks';
+import type { EditorDocument } from '../../../../types/blocks';
 
 const DRAFT_PREFIX = 'gutenberg-draft-';
 const REVISION_PREFIX = 'gutenberg-revisions-';
