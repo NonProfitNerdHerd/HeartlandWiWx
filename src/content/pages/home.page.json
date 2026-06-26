@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "title": "Heartland Chasers",
+    "slug": "home",
+    "seoTitle": "Heartland Chasers | Midwest Storm Chasing",
+    "description": "Heartland Chasers follows Ike and Jess across the Midwest documenting severe weather, storm chasing, and community stories.",
+    "published": true,
+    "draft": false,
+    "featuredImage": "",
+    "template": "default",
+    "author": "",
+    "publishDate": "2026-06-23",
+    "updatedAt": "2026-06-26",
+    "menuLabel": "Home",
+    "showInMenu": true,
+    "menuOrder": 1
+  },
+  "blocks": [
+    {
+      "id": "S5AFlqGN",
+      "type": "hero",
+      "props": {
+        "title": "Hero Title",
+        "subtitle": "",
+        "image": "",
+        "align": "center"
+      }
+    },
+    {
+      "id": "migrated-1",
+      "type": "paragraph",
+      "props": {},
+      "content": "<p>Storm chasing across Wisconsin, Minnesota, Iowa, Illinois, Indiana, and the Dakotas.</p>"
+    },
+    {
+      "id": "CdOAwtoD",
+      "type": "twoColumns",
+      "props": {
+        "columns": 2
+      },
+      "children": []
+    },
+    {
+      "id": "migrated-3",
+      "type": "heading",
+      "props": {
+        "level": 2
+      },
+      "content": "<h2>About Us</h2>"
+    },
+    {
+      "id": "migrated-4",
+      "type": "paragraph",
+      "props": {},
+      "content": "<p>Heartland Chasers follows Ike and Jess as they travel the Midwest documenting severe weather, learning the craft of storm chasing, and sharing the stories behind the storms.</p>"
+    },
+    {
+      "id": "migrated-6",
+      "type": "heading",
+      "props": {
+        "level": 2
+      },
+      "content": "<h2>Live Stream</h2>"
+    },
+    {
+      "id": "migrated-7",
+      "type": "paragraph",
+      "props": {},
+      "content": "<p>When we are chasing, our live stream will appear here.</p>"
+    },
+    {
+      "id": "migrated-8",
+      "type": "heading",
+      "props": {
+        "level": 2
+      },
+      "content": "<h2>Latest Chase Reports</h2>"
+    },
+    {
+      "id": "migrated-9",
+      "type": "paragraph",
+      "props": {},
+      "content": "<p>Reports, photos, radar notes, and lessons learned from the road.</p>"
+    }
+  ]
+}
