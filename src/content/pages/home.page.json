@@ -34,11 +34,90 @@
     },
     {
       "id": "CdOAwtoD",
-      "type": "twoColumns",
+      "type": "threeColumns",
       "props": {
-        "columns": 2
+        "columns": 3,
+        "gap": 15,
+        "width": "wide"
       },
-      "children": []
+      "children": [
+        {
+          "id": "CdOAwtoD-col-0-Y778",
+          "type": "column",
+          "props": {},
+          "children": [
+            {
+              "id": "WOZOzrwy",
+              "type": "card",
+              "props": {
+                "title": "Card"
+              },
+              "content": "<p>About Us</p>"
+            },
+            {
+              "id": "E-JtZKMK",
+              "type": "button",
+              "props": {
+                "label": "About Us",
+                "href": "/about",
+                "variant": "primary"
+              }
+            }
+          ]
+        },
+        {
+          "id": "CdOAwtoD-col-1-3i7w",
+          "type": "column",
+          "props": {},
+          "children": [
+            {
+              "id": "Ywtxs49t",
+              "type": "card",
+              "props": {
+                "title": "Card"
+              },
+              "content": "<p>You Tube Stream</p>"
+            },
+            {
+              "id": "kiXO4tEj",
+              "type": "button",
+              "props": {
+                "label": "YouTube Page",
+                "href": "https://www.youtube.com/@heartlandWiWx",
+                "variant": "primary"
+              }
+            },
+            {
+              "id": "CdOAwtoD-col-1-3i7w-p",
+              "type": "paragraph",
+              "props": {},
+              "content": "<p></p>"
+            }
+          ]
+        },
+        {
+          "id": "CdOAwtoD-col-2-kn17",
+          "type": "column",
+          "props": {},
+          "children": [
+            {
+              "id": "CdOAwtoD-col-2-kn17-p",
+              "type": "paragraph",
+              "props": {},
+              "content": "<p>Follow us on X!</p>"
+            },
+            {
+              "id": "F2h8yNQC",
+              "type": "button",
+              "props": {
+                "label": "X (Twitter) Page",
+                "href": "https://x.com/HeartlandWiWx",
+                "variant": "primary"
+              }
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "migrated-3",
@@ -60,7 +139,7 @@
       "props": {
         "level": 2
       },
-      "content": "<h2>Live Stream</h2>"
+      "content": "<h2>Live Stream</h2><p></p>"
     },
     {
       "id": "migrated-7",
