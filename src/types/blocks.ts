@@ -35,6 +35,19 @@ export interface BlockDefinition {
 	label: string;
 	category: string;
 	icon: string;
+	description?: string;
+	keywords?: string[];
 	defaultProps?: Record<string, unknown>;
 	defaultContent?: string;
+}
+
+export type LeftSidebarTab = 'inserter' | 'list';
+export type EditorMode = 'edit' | 'structure';
+
+export interface FlatBlockNode {
+	block: Block;
+	depth: number;
+	parentId: string | null;
+	index: number;
+	path: number[];
 }

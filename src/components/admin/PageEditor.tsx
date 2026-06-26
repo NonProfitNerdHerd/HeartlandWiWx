@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { renderBlocks } from '../../lib/blocks/render';
-import type { PageDocument, PreviewDevice } from '../../types/blocks';
-import BlockListEditor from './BlockListEditor';
-import MetadataPanel from './MetadataPanel';
+import { useCallback, useEffect, useState } from 'react';
+import type { PageDocument, PreviewDevice, EditorMode } from '../../types/blocks';
+import GutenbergEditor from './gutenberg/GutenbergEditor';
+import { useEditorHistory } from './gutenberg/hooks/useEditorHistory';
+import { saveManualRevision } from './gutenberg/hooks/useAutosave';
 
 interface Props {
 	initialDocument: PageDocument;
@@ -12,14 +12,12 @@ interface Props {
 }
 
 export default function PageEditor({ initialDocument, originalSlug, backUrl = '/admin/pages', globalBlockOptions = [] }: Props) {
-	const [doc, setDoc] = useState<PageDocument>(initialDocument);
+	const { state: doc, setState: setDoc, undo, redo, canUndo, canRedo } = useEditorHistory(initialDocument);
 	const [device, setDevice] = useState<PreviewDevice>('desktop');
-	const [previewOpen, setPreviewOpen] = useState(false);
+	const [structureMode, setStructureMode] = useState<EditorMode>('edit');
 	const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 	const [saving, setSaving] = useState(false);
-	const [autoSaveStatus, setAutoSaveStatus] = useState('');
-
-	const previewHtml = useMemo(() => renderBlocks(doc.blocks), [doc.blocks]);
+	const [autoSaveLabel, setAutoSaveLabel] = useState('');
 
 	const save = useCallback(async (asDraft = false) => {
 		setSaving(true);
@@ -43,7 +41,9 @@ export default function PageEditor({ initialDocument, originalSlug, backUrl = '/
 			});
 			const result = await response.json();
 			if (!response.ok) throw new Error(result.error || 'Save failed');
+			saveManualRevision(originalSlug === 'new' ? doc.meta.slug : originalSlug, payload);
 			setMessage({ type: 'success', text: asDraft ? 'Draft saved.' : 'Page saved. Vercel will redeploy shortly.' });
+			setAutoSaveLabel(`Saved ${new Date().toLocaleTimeString()}`);
 			if (result.slug && result.slug !== originalSlug && originalSlug === 'new') {
 				window.location.href = `/admin/pages/${result.slug}`;
 			}
@@ -56,53 +56,71 @@ export default function PageEditor({ initialDocument, originalSlug, backUrl = '/
 
 	useEffect(() => {
 		const timer = setInterval(() => {
-			if (doc.meta.draft) {
-				setAutoSaveStatus('Draft — auto-save on manual save');
-			}
+			setAutoSaveLabel((prev) => prev || 'Changes auto-save locally while you edit');
 		}, 30000);
 		return () => clearInterval(timer);
-	}, [doc.meta.draft]);
+	}, []);
+
+	const slug = originalSlug === 'new' ? doc.meta.slug || 'new' : originalSlug;
 
 	return (
-		<div className="page-editor">
-			<div className="page-editor-toolbar">
-				<div className="page-editor-toolbar-left">
-					<a href={backUrl} className="admin-button-secondary">← Back</a>
-					<h1>{doc.meta.title || 'Untitled Page'}</h1>
+		<div className="gb-page-editor">
+			<header className="gb-header">
+				<div className="gb-header-left">
+					<a href={backUrl} className="gb-header-back">← Back</a>
+					<h1 className="gb-header-title">{doc.meta.title || 'Untitled'}</h1>
+					{autoSaveLabel ? <span className="gb-header-status">{autoSaveLabel}</span> : null}
 				</div>
-				<div className="page-editor-toolbar-right">
-					<div className="device-toggle">
-						<button type="button" className={device === 'phone' ? 'active' : ''} onClick={() => setDevice('phone')}>Phone</button>
-						<button type="button" className={device === 'tablet' ? 'active' : ''} onClick={() => setDevice('tablet')}>Tablet</button>
-						<button type="button" className={device === 'desktop' ? 'active' : ''} onClick={() => setDevice('desktop')}>Desktop</button>
+				<div className="gb-header-center">
+					<button type="button" className="gb-header-btn" onClick={undo} disabled={!canUndo} title="Undo (⌘Z)">↶</button>
+					<button type="button" className="gb-header-btn" onClick={redo} disabled={!canRedo} title="Redo (⌘⇧Z)">↷</button>
+					<span className="gb-header-sep" />
+					<button
+						type="button"
+						className={`gb-header-btn ${structureMode === 'edit' ? 'is-active' : ''}`}
+						onClick={() => setStructureMode('edit')}
+						title="Edit mode"
+					>
+						Edit
+					</button>
+					<button
+						type="button"
+						className={`gb-header-btn ${structureMode === 'structure' ? 'is-active' : ''}`}
+						onClick={() => setStructureMode('structure')}
+						title="Structure mode"
+					>
+						Structure
+					</button>
+				</div>
+				<div className="gb-header-right">
+					<div className="gb-device-toggle">
+						<button type="button" className={device === 'desktop' ? 'is-active' : ''} onClick={() => setDevice('desktop')} title="Desktop">🖥</button>
+						<button type="button" className={device === 'tablet' ? 'is-active' : ''} onClick={() => setDevice('tablet')} title="Tablet">📱</button>
+						<button type="button" className={device === 'phone' ? 'is-active' : ''} onClick={() => setDevice('phone')} title="Phone">📲</button>
 					</div>
-					<button type="button" className="admin-button-secondary" onClick={() => setPreviewOpen(!previewOpen)}>Preview</button>
-					<button type="button" className="admin-button-secondary" onClick={() => save(true)} disabled={saving}>Save Draft</button>
-					<button type="button" className="admin-button" onClick={() => save(false)} disabled={saving}>{saving ? 'Saving...' : 'Save & Publish'}</button>
+					<button type="button" className="gb-btn-secondary" onClick={() => save(true)} disabled={saving}>Save Draft</button>
+					<button type="button" className="gb-btn-primary" onClick={() => save(false)} disabled={saving}>
+						{saving ? 'Saving…' : 'Save'}
+					</button>
 				</div>
-			</div>
+			</header>
 
-			{message ? <div className={`admin-message ${message.type}`}>{message.text}</div> : null}
-			{autoSaveStatus ? <p className="admin-help">{autoSaveStatus}</p> : null}
+			{message ? <div className={`gb-message gb-message-${message.type}`}>{message.text}</div> : null}
 
-			<div className="page-editor-layout">
-				<div className={`page-editor-canvas device-${device}`}>
-					<BlockListEditor
-						blocks={doc.blocks}
-						onChange={(blocks) => setDoc((prev) => ({ ...prev, blocks }))}
-						globalBlockOptions={globalBlockOptions}
-					/>
-				</div>
-				<MetadataPanel meta={doc.meta} onChange={(meta) => setDoc((prev) => ({ ...prev, meta }))} />
-			</div>
-
-			{previewOpen ? (
-				<div className="page-preview-modal" onClick={() => setPreviewOpen(false)}>
-					<div className={`page-preview-frame device-${device}`} onClick={(e) => e.stopPropagation()}>
-						<div className="cms-content" dangerouslySetInnerHTML={{ __html: previewHtml }} />
-					</div>
-				</div>
-			) : null}
+			<GutenbergEditor
+				document={doc}
+				onDocumentChange={setDoc}
+				slug={slug}
+				globalBlockOptions={globalBlockOptions}
+				device={device}
+				onDeviceChange={setDevice}
+				structureMode={structureMode}
+				onStructureModeChange={setStructureMode}
+				canUndo={canUndo}
+				canRedo={canRedo}
+				onUndo={undo}
+				onRedo={redo}
+			/>
 		</div>
 	);
 }
