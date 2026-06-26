@@ -53,11 +53,6 @@ export default function EditorCanvas({
 
 	const closePopover = useCallback(() => setPopover(null), []);
 
-	const updateBlock = useCallback(
-		(id: string, block: Block) => onChange(updateBlockInTree(blocks, id, () => block)),
-		[blocks, onChange],
-	);
-
 	const removeBlock = useCallback(
 		(id: string) => {
 			onChange(removeBlockFromTree(blocks, id));
@@ -152,7 +147,7 @@ export default function EditorCanvas({
 						structureMode={structureMode}
 						autoFocus={focusBlockId === block.id}
 						onSelect={onSelect}
-						onChange={updateBlock}
+						onChange={(b) => onChange(updateBlockInTree(blocks, block.id, () => b))}
 						onRemove={removeBlock}
 						onDuplicate={duplicateBlockById}
 						onEnterAfter={insertAfter}
@@ -174,36 +169,9 @@ export default function EditorCanvas({
 							setInsertIndicator({ parentId: loc.parentId, index: idx });
 						}}
 						onDrop={handleDrop}
+						renderBlockList={renderBlockList}
+						onInsertInColumn={(columnId, index, anchor) => openPopover(columnId, index, anchor)}
 						globalBlockOptions={globalBlockOptions}
-						renderChild={(child) => (
-							<CanvasBlock
-								key={child.id}
-								block={child}
-								isSelected={selectedId === child.id}
-								structureMode={structureMode}
-								autoFocus={focusBlockId === child.id}
-								onSelect={onSelect}
-								onChange={(b) => onChange(updateBlockInTree(blocks, child.id, () => b))}
-								onRemove={removeBlock}
-								onDuplicate={duplicateBlockById}
-								onEnterAfter={() => insertAfter(child.id)}
-								onSlash={(id, query, rect) => {
-									const loc = findBlockLocation(blocks, id);
-									if (!loc) return;
-									openPopover(loc.parentId, loc.index, rect, id, query);
-								}}
-								onSlashClose={closePopover}
-								onDragStart={(id, e) => e.dataTransfer.setData('text/block-id', id)}
-								onDragOver={(id, position, e) => {
-									e.preventDefault();
-									const loc = findBlockLocation(blocks, id);
-									if (!loc) return;
-									setInsertIndicator({ parentId: loc.parentId, index: position === 'before' ? loc.index : loc.index + 1 });
-								}}
-								onDrop={handleDrop}
-								globalBlockOptions={globalBlockOptions}
-							/>
-						)}
 					/>
 				</div>
 			))}

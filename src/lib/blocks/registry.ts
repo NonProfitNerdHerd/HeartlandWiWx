@@ -1,4 +1,5 @@
 import type { BlockDefinition } from '../types/blocks';
+import { createColumnWrapper } from './columns';
 
 export const GUTENBERG_CATEGORIES = [
 	'Basic',
@@ -112,18 +113,13 @@ export function createBlock(type: string, id: string): import('../types/blocks')
 	const colCount = getColumnCount(type);
 	const children = LAYOUT_CHILD_TYPES.has(type)
 		? colCount > 0
-			? Array.from({ length: colCount }, (_, i) => ({
-				id: `${id}-col-${i}`,
-				type: 'paragraph',
-				props: {},
-				content: '<p></p>',
-			}))
+			? Array.from({ length: colCount }, (_, i) => createColumnWrapper(`${id}-col-${i}`))
 			: []
 		: undefined;
 	return {
 		id,
 		type,
-		props: { ...(def?.defaultProps ?? {}) },
+		props: { ...(def?.defaultProps ?? {}), ...(colCount > 0 ? { gap: 24 } : {}) },
 		content: def?.defaultContent,
 		children,
 	};

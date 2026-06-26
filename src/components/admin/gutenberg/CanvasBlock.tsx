@@ -1,7 +1,9 @@
-import { memo, useState } from 'react';
-import { getBlockDefinition, getColumnCount } from '../../../lib/blocks/registry';
+import { memo, useEffect, useState } from 'react';
+import { getBlockDefinition } from '../../../lib/blocks/registry';
+import { getBlockSpacingStyle, isColumnsBlock, normalizeColumnsBlock } from '../../../lib/blocks/columns';
 import type { Block, EditorMode } from '../../../types/blocks';
 import InlineRichText from './InlineRichText';
+import ColumnsCanvas from './ColumnsCanvas';
 
 const TEXT_BLOCKS = new Set([
 	'paragraph', 'heading', 'bulletList', 'orderedList', 'quote', 'codeBlock',
@@ -28,7 +30,8 @@ interface Props {
 	onDragStart: (id: string, e: React.DragEvent) => void;
 	onDragOver: (id: string, position: 'before' | 'after', e: React.DragEvent) => void;
 	onDrop: (targetId: string, position: 'before' | 'after', e: React.DragEvent) => void;
-	renderChild?: (child: Block, index: number) => React.ReactNode;
+	renderBlockList?: (blockList: Block[], parentId: string | null) => React.ReactNode;
+	onInsertInColumn?: (columnId: string, index: number, anchor: DOMRect) => void;
 	globalBlockOptions: { id: string; name: string }[];
 }
 
@@ -47,12 +50,21 @@ function CanvasBlockInner({
 	onDragStart,
 	onDragOver,
 	onDrop,
-	renderChild,
+	renderBlockList,
+	onInsertInColumn,
 	globalBlockOptions,
 }: Props) {
 	const [menuOpen, setMenuOpen] = useState(false);
 	const def = getBlockDefinition(block.type);
 	const showChrome = isSelected || structureMode === 'structure';
+
+	useEffect(() => {
+		if (!isColumnsBlock(block.type)) return;
+		const needsNormalize = block.children?.some((c) => c.type !== 'column');
+		if (needsNormalize) {
+			onChange(normalizeColumnsBlock(block));
+		}
+	}, [block.id]);
 
 	const handleClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
@@ -149,16 +161,30 @@ function CanvasBlockInner({
 			return <div className="gb-canvas-embed">{block.type}: {url}</div>;
 		}
 
-		if (LAYOUT_WITH_CHILDREN.has(block.type)) {
-			const colCount = getColumnCount(block.type);
-			const className = colCount > 0 ? `block-columns block-columns-${colCount}` : 'block-container';
+		if (isColumnsBlock(block.type)) {
 			return (
-				<div className={className}>
-					{(block.children ?? []).map((child, i) =>
-						renderChild ? renderChild(child, i) : (
+				<ColumnsCanvas
+					block={block}
+					structureMode={structureMode}
+					isSelected={isSelected}
+					renderColumnBlocks={(column) =>
+						renderBlockList ? renderBlockList(column.children ?? [], column.id) : null
+					}
+					onInsertInColumn={(columnId, index, anchor) =>
+						onInsertInColumn?.(columnId, index, anchor)
+					}
+				/>
+			);
+		}
+
+		if (LAYOUT_WITH_CHILDREN.has(block.type)) {
+			return (
+				<div className="block-container">
+					{renderBlockList
+						? renderBlockList(block.children ?? [], block.id)
+						: (block.children ?? []).map((child) => (
 							<div key={child.id} className="block-column">{child.type}</div>
-						),
-					)}
+						))}
 				</div>
 			);
 		}
@@ -171,6 +197,7 @@ function CanvasBlockInner({
 			className={`gb-canvas-block ${showChrome ? 'is-visible' : ''} ${isSelected ? 'is-selected' : ''} ${structureMode === 'structure' ? 'is-structure' : ''}`}
 			data-block-id={block.id}
 			data-block-type={block.type}
+			style={getBlockSpacingStyle(block.props)}
 			onClick={handleClick}
 			onDragOver={(e) => {
 				e.preventDefault();

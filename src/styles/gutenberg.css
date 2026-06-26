@@ -779,6 +779,75 @@ body.admin-wide {
 	min-height: 40px;
 }
 
+/* Editor column cells */
+.gb-columns-layout {
+	width: 100%;
+}
+
+.gb-column-cell {
+	border: 1px dashed #c3c4c7;
+	border-radius: 2px;
+	background: rgba(255, 255, 255, 0.5);
+	min-height: 80px;
+	padding: 8px;
+	position: relative;
+}
+
+.gb-columns-layout.is-visible .gb-column-cell {
+	border-color: #8c8f94;
+}
+
+.gb-canvas-block.is-selected .gb-column-cell {
+	border-color: #3858e9;
+	background: rgba(56, 88, 233, 0.04);
+}
+
+.gb-column-label {
+	font-size: 11px;
+	font-weight: 600;
+	color: #757575;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	margin-bottom: 6px;
+}
+
+.gb-column-blocks .gb-block-wrapper {
+	margin-bottom: 0;
+}
+
+.gb-column-blocks .gb-inserter-between {
+	margin: 4px 0;
+}
+
+.gb-column-inserter {
+	display: flex;
+	justify-content: center;
+	padding-top: 8px;
+}
+
+.gb-column-plus {
+	opacity: 0;
+	transition: opacity 0.15s;
+}
+
+.gb-column-cell:hover .gb-column-plus,
+.gb-columns-layout.is-visible .gb-column-plus {
+	opacity: 1;
+}
+
+.gb-settings-section {
+	margin-top: 8px;
+}
+
+.gb-settings-section-title {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	color: #757575;
+	margin: 16px 0 8px;
+	letter-spacing: 0.04em;
+}
+
 /* Bubble menu */
 .gb-bubble-menu {
 	display: flex;

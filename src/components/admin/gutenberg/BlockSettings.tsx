@@ -1,5 +1,9 @@
+import type { ReactNode } from 'react';
 import { getBlockDefinition } from '../../../lib/blocks/registry';
+import { isColumnsBlock } from '../../../lib/blocks/columns';
 import type { Block } from '../../../types/blocks';
+import ColumnsSettings from './ColumnsSettings';
+import SpacingSettings from './SpacingSettings';
 
 const TEXT_BLOCKS = new Set([
 	'paragraph', 'heading', 'bulletList', 'orderedList', 'quote', 'codeBlock',
@@ -12,11 +16,28 @@ interface Props {
 	globalBlockOptions: { id: string; name: string }[];
 }
 
+function withSpacing(content: ReactNode, block: Block, onChange: (block: Block) => void) {
+	if (isColumnsBlock(block.type)) {
+		return (
+			<>
+				{content}
+				<ColumnsSettings block={block} onChange={onChange} />
+			</>
+		);
+	}
+	return (
+		<>
+			{content}
+			<SpacingSettings block={block} onChange={onChange} />
+		</>
+	);
+}
+
 export default function BlockSettings({ block, onChange, globalBlockOptions }: Props) {
 	const def = getBlockDefinition(block.type);
 
 	if (block.type === 'heading') {
-		return (
+		return withSpacing(
 			<div className="gb-settings-fields">
 				<label>
 					Level
@@ -29,12 +50,14 @@ export default function BlockSettings({ block, onChange, globalBlockOptions }: P
 						))}
 					</select>
 				</label>
-			</div>
+			</div>,
+			block,
+			onChange,
 		);
 	}
 
 	if (block.type === 'button') {
-		return (
+		return withSpacing(
 			<div className="gb-settings-fields">
 				<label>Label <input value={String(block.props.label ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, label: e.target.value } })} /></label>
 				<label>Link <input value={String(block.props.href ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, href: e.target.value } })} /></label>
@@ -47,23 +70,27 @@ export default function BlockSettings({ block, onChange, globalBlockOptions }: P
 						<option value="danger">Danger</option>
 					</select>
 				</label>
-			</div>
+			</div>,
+			block,
+			onChange,
 		);
 	}
 
 	if (block.type === 'image') {
-		return (
+		return withSpacing(
 			<div className="gb-settings-fields">
 				<label>Image URL <input value={String(block.props.src ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, src: e.target.value } })} /></label>
 				<label>Alt text <input value={String(block.props.alt ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, alt: e.target.value } })} /></label>
 				<label>Caption <input value={String(block.props.caption ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, caption: e.target.value } })} /></label>
 				{block.props.src ? <img src={String(block.props.src)} alt="" className="gb-settings-preview-img" /> : null}
-			</div>
+			</div>,
+			block,
+			onChange,
 		);
 	}
 
 	if (block.type === 'hero' || block.type === 'splitHero' || block.type === 'minimalHero') {
-		return (
+		return withSpacing(
 			<div className="gb-settings-fields">
 				<label>Title <input value={String(block.props.title ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, title: e.target.value } })} /></label>
 				<label>Subtitle <input value={String(block.props.subtitle ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, subtitle: e.target.value } })} /></label>
@@ -75,22 +102,26 @@ export default function BlockSettings({ block, onChange, globalBlockOptions }: P
 						<option value="right">Right</option>
 					</select>
 				</label>
-			</div>
+			</div>,
+			block,
+			onChange,
 		);
 	}
 
 	if (block.type === 'ctaBanner') {
-		return (
+		return withSpacing(
 			<div className="gb-settings-fields">
 				<label>Title <input value={String(block.props.title ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, title: e.target.value } })} /></label>
 				<label>Button <input value={String(block.props.buttonLabel ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, buttonLabel: e.target.value } })} /></label>
 				<label>Link <input value={String(block.props.href ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, href: e.target.value } })} /></label>
-			</div>
+			</div>,
+			block,
+			onChange,
 		);
 	}
 
 	if (block.type === 'globalBlock') {
-		return (
+		return withSpacing(
 			<div className="gb-settings-fields">
 				<label>Global Block
 					<select value={String(block.props.blockId ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, blockId: e.target.value } })}>
@@ -100,35 +131,49 @@ export default function BlockSettings({ block, onChange, globalBlockOptions }: P
 						))}
 					</select>
 				</label>
-			</div>
+			</div>,
+			block,
+			onChange,
 		);
 	}
 
 	if (block.type === 'embed' || block.type === 'video') {
-		return (
+		return withSpacing(
 			<div className="gb-settings-fields">
 				<label>URL <input value={String(block.props.url ?? block.props.src ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, url: e.target.value, src: e.target.value } })} /></label>
-			</div>
+			</div>,
+			block,
+			onChange,
 		);
 	}
 
 	if (block.type === 'spacer') {
-		return (
+		return withSpacing(
 			<div className="gb-settings-fields">
 				<label>Height (px) <input type="number" value={Number(block.props.height ?? 48)} onChange={(e) => onChange({ ...block, props: { ...block.props, height: Number(e.target.value) } })} /></label>
-			</div>
+			</div>,
+			block,
+			onChange,
 		);
+	}
+
+	if (isColumnsBlock(block.type)) {
+		return <ColumnsSettings block={block} onChange={onChange} />;
 	}
 
 	if (TEXT_BLOCKS.has(block.type)) {
-		return (
-			<p className="gb-settings-hint">Edit content directly on the canvas. Use the floating toolbar for formatting.</p>
+		return withSpacing(
+			<p className="gb-settings-hint">Edit content directly on the canvas. Use the floating toolbar for formatting.</p>,
+			block,
+			onChange,
 		);
 	}
 
-	return (
+	return withSpacing(
 		<p className="gb-settings-hint">
 			{def?.label ?? block.type} block. Configure available options above or edit on canvas.
-		</p>
+		</p>,
+		block,
+		onChange,
 	);
 }

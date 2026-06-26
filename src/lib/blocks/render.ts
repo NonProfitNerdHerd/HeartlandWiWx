@@ -1,5 +1,12 @@
 import { marked } from 'marked';
 import type { Block } from '../types/blocks';
+import {
+	getColumnsCount,
+	getColumnGap,
+	isColumnsBlock,
+	normalizeColumnsBlock,
+	spacingStyleAttr,
+} from './columns';
 
 marked.setOptions({ gfm: true, breaks: true });
 
@@ -77,8 +84,10 @@ export function blocksToMarkdown(blocks: Block[]): string {
 		.join('\n\n');
 }
 
-function stripTags(html: string): string {
-	return html.replace(/<[^>]+>/g, '').trim();
+function wrapWithSpacing(html: string, props: Record<string, unknown>): string {
+	const spacing = spacingStyleAttr(props);
+	if (!spacing || !html) return html;
+	return `<div style="${spacing}">${html}</div>`;
 }
 
 export function renderBlockHtml(block: Block, globalBlocks?: Record<string, Block[]>): string {
@@ -98,19 +107,19 @@ export function renderBlockHtml(block: Block, globalBlocks?: Record<string, Bloc
 	}
 
 	if (block.type === 'divider') {
-		return '<hr class="block-divider" />';
+		return wrapWithSpacing('<hr class="block-divider" />', block.props);
 	}
 
 	if (block.type === 'spacer') {
 		const height = Number(block.props.height ?? 48);
-		return `<div class="block-spacer" style="height:${height}px" aria-hidden="true"></div>`;
+		return wrapWithSpacing(`<div class="block-spacer" style="height:${height}px" aria-hidden="true"></div>`, block.props);
 	}
 
 	if (block.type === 'button') {
 		const label = String(block.props.label ?? 'Button');
 		const href = String(block.props.href ?? '#');
 		const variant = String(block.props.variant ?? 'primary');
-		return `<a class="btn btn-${variant}" href="${href}">${escapeHtml(label)}</a>`;
+		return wrapWithSpacing(`<a class="btn btn-${variant}" href="${href}">${escapeHtml(label)}</a>`, block.props);
 	}
 
 	if (block.type === 'image') {
@@ -118,43 +127,65 @@ export function renderBlockHtml(block: Block, globalBlocks?: Record<string, Bloc
 		const alt = String(block.props.alt ?? '');
 		const caption = String(block.props.caption ?? '');
 		if (!src) return '';
-		return `<figure class="block-image"><img src="${src}" alt="${escapeHtml(alt)}" loading="lazy" />${caption ? `<figcaption>${escapeHtml(caption)}</figcaption>` : ''}</figure>`;
+		return wrapWithSpacing(
+			`<figure class="block-image"><img src="${src}" alt="${escapeHtml(alt)}" loading="lazy" />${caption ? `<figcaption>${escapeHtml(caption)}</figcaption>` : ''}</figure>`,
+			block.props,
+		);
 	}
 
 	if (block.type === 'hero') {
 		const title = String(block.props.title ?? '');
 		const subtitle = String(block.props.subtitle ?? '');
 		const image = String(block.props.image ?? '');
-		return `<section class="block-hero" ${image ? `style="background-image:url(${image})"` : ''}><div class="block-hero-inner"><h1>${escapeHtml(title)}</h1>${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}</div></section>`;
+		return wrapWithSpacing(
+			`<section class="block-hero" ${image ? `style="background-image:url(${image})"` : ''}><div class="block-hero-inner"><h1>${escapeHtml(title)}</h1>${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}</div></section>`,
+			block.props,
+		);
 	}
 
 	if (block.type === 'alert' || block.type === 'callout') {
 		const variant = String(block.props.variant ?? 'info');
 		const title = block.props.title ? `<strong>${escapeHtml(String(block.props.title))}</strong>` : '';
-		return `<div class="block-${block.type} block-${variant}">${title}${block.content ?? ''}</div>`;
+		return wrapWithSpacing(`<div class="block-${block.type} block-${variant}">${title}${block.content ?? ''}</div>`, block.props);
 	}
 
 	if (block.type === 'ctaBanner') {
 		const title = String(block.props.title ?? '');
 		const buttonLabel = String(block.props.buttonLabel ?? 'Learn more');
 		const href = String(block.props.href ?? '/');
-		return `<section class="block-cta"><h2>${escapeHtml(title)}</h2><a class="btn btn-primary" href="${href}">${escapeHtml(buttonLabel)}</a></section>`;
+		return wrapWithSpacing(
+			`<section class="block-cta"><h2>${escapeHtml(title)}</h2><a class="btn btn-primary" href="${href}">${escapeHtml(buttonLabel)}</a></section>`,
+			block.props,
+		);
 	}
 
-	if (block.type === 'twoColumns' || block.type === 'threeColumns' || block.type === 'fourColumns') {
-		const cols = block.type === 'twoColumns' ? 2 : block.type === 'threeColumns' ? 3 : 4;
-		const children = block.children ?? [];
-		const cells = Array.from({ length: cols }, (_, i) => children[i] ?? { id: `empty-${i}`, type: 'paragraph', props: {}, content: '' });
-		return `<div class="block-columns block-columns-${cols}">${cells.map((c) => `<div class="block-column">${renderBlockHtml(c, globalBlocks)}</div>`).join('')}</div>`;
+	if (block.type === 'column') {
+		return (block.children ?? []).map((c) => renderBlockHtml(c, globalBlocks)).join('');
+	}
+
+	if (isColumnsBlock(block.type)) {
+		const normalized = normalizeColumnsBlock(block);
+		const cols = getColumnsCount(normalized);
+		const gap = getColumnGap(normalized);
+		const spacing = spacingStyleAttr(normalized.props);
+		const style = [`gap:${gap}px`, spacing].filter(Boolean).join(';');
+		const columns = normalized.children ?? [];
+		return `<div class="block-columns block-columns-${cols}"${style ? ` style="${style}"` : ''}>${columns
+			.map((col) => {
+				const inner = (col.children ?? []).map((c) => renderBlockHtml(c, globalBlocks)).join('');
+				return `<div class="block-column">${inner}</div>`;
+			})
+			.join('')}</div>`;
 	}
 
 	if (block.type === 'container' || block.type === 'oneColumn') {
 		const inner = (block.children ?? []).map((c) => renderBlockHtml(c, globalBlocks)).join('');
-		return `<div class="block-container">${inner}</div>`;
+		const spacing = spacingStyleAttr(block.props);
+		return `<div class="block-container"${spacing ? ` style="${spacing}"` : ''}>${inner}</div>`;
 	}
 
 	if (block.content) {
-		return block.content;
+		return wrapWithSpacing(block.content, block.props);
 	}
 
 	return '';
