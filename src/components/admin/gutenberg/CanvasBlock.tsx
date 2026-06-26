@@ -17,11 +17,11 @@ interface Props {
 	block: Block;
 	isSelected: boolean;
 	structureMode: EditorMode;
+	autoFocus?: boolean;
 	onSelect: (id: string) => void;
 	onChange: (block: Block) => void;
 	onRemove: (id: string) => void;
 	onDuplicate: (id: string) => void;
-	onInsertAfter: (afterId: string) => void;
 	onEnterAfter: (afterId: string) => void;
 	onSlash: (blockId: string, query: string, rect: DOMRect) => void;
 	onSlashClose: () => void;
@@ -36,11 +36,11 @@ function CanvasBlockInner({
 	block,
 	isSelected,
 	structureMode,
+	autoFocus = false,
 	onSelect,
 	onChange,
 	onRemove,
 	onDuplicate,
-	onInsertAfter,
 	onEnterAfter,
 	onSlash,
 	onSlashClose,
@@ -71,6 +71,7 @@ function CanvasBlockInner({
 					onFocus={() => onSelect(block.id)}
 					placeholder={block.type === 'heading' ? 'Heading' : 'Type / to choose a block'}
 					className={`gb-block-${block.type}`}
+					autoFocus={autoFocus}
 				/>
 			);
 		}

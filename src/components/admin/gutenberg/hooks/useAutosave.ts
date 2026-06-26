@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import type { PageDocument } from '../../../types/blocks';
+import type { EditorDocument } from '../../../types/blocks';
 
 const DRAFT_PREFIX = 'gutenberg-draft-';
 const REVISION_PREFIX = 'gutenberg-revisions-';
@@ -7,10 +7,10 @@ const REVISION_PREFIX = 'gutenberg-revisions-';
 interface Revision {
 	timestamp: number;
 	label: string;
-	document: PageDocument;
+	document: EditorDocument;
 }
 
-export function useAutosave(slug: string, doc: PageDocument, dirty: boolean) {
+export function useAutosave(slug: string, doc: EditorDocument, dirty: boolean) {
 	const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const lastSaved = useRef<string>(JSON.stringify(doc));
 
@@ -35,7 +35,7 @@ export function useAutosave(slug: string, doc: PageDocument, dirty: boolean) {
 	return { clearDraft };
 }
 
-export function getDraftRecovery(slug: string): { savedAt: number; doc: PageDocument } | null {
+export function getDraftRecovery(slug: string): { savedAt: number; doc: EditorDocument } | null {
 	try {
 		const raw = localStorage.getItem(`${DRAFT_PREFIX}${slug}`);
 		if (!raw) return null;
@@ -45,7 +45,7 @@ export function getDraftRecovery(slug: string): { savedAt: number; doc: PageDocu
 	}
 }
 
-function saveRevision(slug: string, doc: PageDocument, label: string) {
+function saveRevision(slug: string, doc: EditorDocument, label: string) {
 	try {
 		const key = `${REVISION_PREFIX}${slug}`;
 		const existing: Revision[] = JSON.parse(localStorage.getItem(key) ?? '[]');
@@ -67,6 +67,6 @@ export function getRevisions(slug: string): Revision[] {
 	}
 }
 
-export function saveManualRevision(slug: string, doc: PageDocument) {
+export function saveManualRevision(slug: string, doc: EditorDocument) {
 	saveRevision(slug, doc, 'Manual save');
 }

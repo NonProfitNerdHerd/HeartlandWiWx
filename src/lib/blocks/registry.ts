@@ -13,6 +13,23 @@ export const GUTENBERG_CATEGORIES = [
 
 export type GutenbergCategory = (typeof GUTENBERG_CATEGORIES)[number];
 
+/** Blocks shown first in inline inserter and slash menu */
+export const COMMON_BLOCK_TYPES = [
+	'paragraph',
+	'heading',
+	'image',
+	'button',
+	'twoColumns',
+	'bulletList',
+	'quote',
+	'divider',
+	'spacer',
+	'gallery',
+	'embed',
+] as const;
+
+export const RECENT_BLOCKS_LIMIT = 6;
+
 export const BLOCK_DEFINITIONS: BlockDefinition[] = [
 	{ type: 'paragraph', label: 'Paragraph', category: 'Basic', icon: '¶', description: 'Start with the building block of all narrative.', keywords: ['text', 'p'], defaultContent: '<p></p>' },
 	{ type: 'heading', label: 'Heading', category: 'Basic', icon: 'H', description: 'Introduce new sections and organize content.', keywords: ['title', 'h1', 'h2'], defaultProps: { level: 2 }, defaultContent: '<h2>Heading</h2>' },

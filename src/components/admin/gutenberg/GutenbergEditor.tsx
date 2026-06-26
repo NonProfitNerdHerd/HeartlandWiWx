@@ -1,14 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { nanoid } from 'nanoid';
-import { createBlock } from '../../../lib/blocks/registry';
-import type { LeftSidebarTab, PageDocument, PreviewDevice, EditorMode } from '../../../types/blocks';
+import type {
+	ContentType,
+	EditorDocument,
+	InsertContext,
+	LeftSidebarTab,
+	PreviewDevice,
+	EditorMode,
+} from '../../../types/blocks';
 import {
 	ensureParagraphIfEmpty,
 	findBlockLocation,
 	insertBlockAt,
 	moveBlockInTree,
+	removeBlockFromTree,
 	updateBlockInTree,
 } from './utils/blockTree';
+import { makeBlockFromType, normalizeRecentType } from './utils/insertBlock';
 import { useBlockPreferences } from './hooks/useBlockPreferences';
 import { getDraftRecovery, getRevisions, useAutosave } from './hooks/useAutosave';
 import LeftSidebar from './LeftSidebar';
@@ -16,14 +23,13 @@ import EditorCanvas from './EditorCanvas';
 import RightSidebar from './RightSidebar';
 
 interface Props {
-	document: PageDocument;
-	onDocumentChange: (doc: PageDocument) => void;
+	document: EditorDocument;
+	onDocumentChange: (doc: EditorDocument) => void;
+	contentType: ContentType;
 	slug: string;
 	globalBlockOptions?: { id: string; name: string }[];
 	device: PreviewDevice;
-	onDeviceChange: (device: PreviewDevice) => void;
 	structureMode: EditorMode;
-	onStructureModeChange: (mode: EditorMode) => void;
 	canUndo: boolean;
 	canRedo: boolean;
 	onUndo: () => void;
@@ -33,12 +39,11 @@ interface Props {
 export default function GutenbergEditor({
 	document: doc,
 	onDocumentChange,
+	contentType,
 	slug,
 	globalBlockOptions = [],
 	device,
-	onDeviceChange,
 	structureMode,
-	onStructureModeChange,
 	canUndo,
 	canRedo,
 	onUndo,
@@ -46,13 +51,14 @@ export default function GutenbergEditor({
 }: Props) {
 	const [leftTab, setLeftTab] = useState<LeftSidebarTab>('inserter');
 	const [selectedId, setSelectedId] = useState<string | null>(null);
-	const [insertAfterId, setInsertAfterId] = useState<string | null>(null);
+	const [focusBlockId, setFocusBlockId] = useState<string | null>(null);
+	const [sidebarInsertIndex, setSidebarInsertIndex] = useState<number | null>(null);
 	const [dragBlockType, setDragBlockType] = useState<string | null>(null);
 	const [dirty, setDirty] = useState(false);
-	const [recoveryPrompt, setRecoveryPrompt] = useState<{ savedAt: number; doc: PageDocument } | null>(null);
+	const [recoveryPrompt, setRecoveryPrompt] = useState<{ savedAt: number; doc: EditorDocument } | null>(null);
 
 	const { favorites, recent, toggleFavorite, recordRecent } = useBlockPreferences();
-	const { clearDraft } = useAutosave(slug, doc, dirty);
+	useAutosave(slug, doc, dirty);
 
 	const blocks = useMemo(() => ensureParagraphIfEmpty(doc.blocks), [doc.blocks]);
 
@@ -62,6 +68,12 @@ export default function GutenbergEditor({
 			setRecoveryPrompt(draft);
 		}
 	}, [slug]);
+
+	useEffect(() => {
+		if (!focusBlockId) return;
+		const timer = setTimeout(() => setFocusBlockId(null), 150);
+		return () => clearTimeout(timer);
+	}, [focusBlockId]);
 
 	const setBlocks = useCallback(
 		(nextBlocks: typeof blocks) => {
@@ -74,42 +86,46 @@ export default function GutenbergEditor({
 	const setMeta = useCallback(
 		(meta: typeof doc.meta) => {
 			setDirty(true);
-			onDocumentChange({ ...doc, meta });
+			onDocumentChange({ ...doc, meta } as EditorDocument);
 		},
 		[doc, onDocumentChange],
 	);
 
-	const insertBlock = useCallback(
-		(type: string) => {
-			recordRecent(type.startsWith('global:') ? 'globalBlock' : type);
-			let newBlock;
-			if (type.startsWith('global:')) {
-				newBlock = createBlock('globalBlock', nanoid(8));
-				newBlock.props = { blockId: type.slice(7) };
+	const insertBlockAtContext = useCallback(
+		(type: string, context: InsertContext) => {
+			recordRecent(normalizeRecentType(type));
+			const newBlock = makeBlockFromType(type);
+
+			let next = blocks;
+			if (context.replaceBlockId) {
+				const loc = findBlockLocation(blocks, context.replaceBlockId);
+				if (!loc) return;
+				next = insertBlockAt(
+					removeBlockFromTree(blocks, context.replaceBlockId),
+					loc.parentId,
+					loc.index,
+					newBlock,
+				);
 			} else {
-				newBlock = createBlock(type, nanoid(8));
+				next = insertBlockAt(blocks, context.parentId, context.index, newBlock);
 			}
 
-			const parentId = null;
-			let index: number;
-			if (insertAfterId) {
-				const loc = findBlockLocation(blocks, insertAfterId);
-				index = loc ? loc.index + 1 : blocks.length;
-			} else {
-				index = blocks.length;
-			}
-
-			setBlocks(insertBlockAt(blocks, parentId, index, newBlock));
+			setBlocks(next);
 			setSelectedId(newBlock.id);
-			setInsertAfterId(null);
+			setFocusBlockId(newBlock.id);
+			setSidebarInsertIndex(null);
 		},
-		[blocks, insertAfterId, recordRecent, setBlocks],
+		[blocks, recordRecent, setBlocks],
 	);
 
-	const handleOpenInserter = useCallback((afterId: string | null) => {
-		setInsertAfterId(afterId);
-		setLeftTab('inserter');
-	}, []);
+	const insertFromSidebar = useCallback(
+		(type: string) => {
+			const index = sidebarInsertIndex ?? blocks.length;
+			const rect = new DOMRect(window.innerWidth / 2, 200, 0, 0);
+			insertBlockAtContext(type, { parentId: null, index, anchor: rect });
+		},
+		[blocks.length, insertBlockAtContext, sidebarInsertIndex],
+	);
 
 	const handleBlockChange = useCallback(
 		(id: string, block: import('../../../types/blocks').Block) => {
@@ -150,6 +166,8 @@ export default function GutenbergEditor({
 		return () => window.removeEventListener('keydown', onKey);
 	}, [onUndo, onRedo]);
 
+	const contentLabel = contentType === 'post' ? 'Post' : 'Page';
+
 	return (
 		<div className="gb-editor">
 			{recoveryPrompt && (
@@ -166,14 +184,14 @@ export default function GutenbergEditor({
 				blocks={blocks}
 				selectedId={selectedId}
 				onSelectBlock={(id) => setSelectedId(id === '__page__' ? null : id)}
-				onInsert={insertBlock}
+				onInsert={insertFromSidebar}
 				onDragStart={(type, e) => {
 					setDragBlockType(type);
 					e.dataTransfer.setData('text/block-type', type);
 					e.dataTransfer.effectAllowed = 'copy';
 				}}
 				onMove={handleMove}
-				pageTitle={doc.meta.title}
+				pageTitle={doc.meta.title || contentLabel}
 				favorites={favorites}
 				recent={recent}
 				onToggleFavorite={toggleFavorite}
@@ -187,7 +205,10 @@ export default function GutenbergEditor({
 					selectedId={selectedId}
 					onSelect={setSelectedId}
 					structureMode={structureMode}
-					onOpenInserter={handleOpenInserter}
+					onInsertBlock={insertBlockAtContext}
+					focusBlockId={focusBlockId}
+					onFocusBlock={setFocusBlockId}
+					recent={recent}
 					globalBlockOptions={globalBlockOptions}
 					dragBlockType={dragBlockType}
 					onDragBlockType={setDragBlockType}
@@ -195,6 +216,7 @@ export default function GutenbergEditor({
 			</main>
 
 			<RightSidebar
+				contentType={contentType}
 				meta={doc.meta}
 				onMetaChange={setMeta}
 				blocks={blocks}

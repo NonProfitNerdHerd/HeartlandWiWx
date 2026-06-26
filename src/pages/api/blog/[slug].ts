@@ -1,23 +1,17 @@
 import type { APIRoute } from 'astro';
-import { blogPostExists, getBlogPost, saveBlogPost, type BlogRecord } from '../../../lib/blog';
+import {
+	getPostDocument,
+	postDocumentExists,
+	savePostDocument,
+	type PostDocument,
+} from '../../../lib/blog-document';
 import { isValidSlug } from '../../../lib/slug';
 
 export const prerender = false;
 
-function parseBlogPayload(body: unknown): BlogRecord {
-	const data = body as Partial<BlogRecord>;
-	return {
-		title: String(data.title ?? '').trim(),
-		slug: String(data.slug ?? '').trim(),
-		seoTitle: String(data.seoTitle ?? '').trim() || String(data.title ?? '').trim(),
-		description: String(data.description ?? '').trim() || String(data.excerpt ?? '').trim(),
-		body: String(data.body ?? ''),
-		published: data.published !== false,
-		updatedAt: String(data.updatedAt ?? new Date().toISOString().slice(0, 10)),
-		date: String(data.date ?? new Date().toISOString().slice(0, 10)),
-		excerpt: String(data.excerpt ?? ''),
-		featuredImage: String(data.featuredImage ?? ''),
-	};
+function isPostDocument(body: unknown): body is PostDocument {
+	const doc = body as PostDocument;
+	return Boolean(doc?.meta?.slug && Array.isArray(doc?.blocks));
 }
 
 export const GET: APIRoute = async ({ params }) => {
@@ -30,7 +24,7 @@ export const GET: APIRoute = async ({ params }) => {
 	}
 
 	try {
-		const post = await getBlogPost(slug);
+		const post = await getPostDocument(slug);
 		if (!post) {
 			return new Response(JSON.stringify({ error: 'Blog post not found' }), {
 				status: 404,
@@ -38,7 +32,7 @@ export const GET: APIRoute = async ({ params }) => {
 			});
 		}
 
-		return new Response(JSON.stringify({ post }), {
+		return new Response(JSON.stringify({ post: post.doc }), {
 			status: 200,
 			headers: { 'Content-Type': 'application/json' },
 		});
@@ -54,9 +48,17 @@ export const GET: APIRoute = async ({ params }) => {
 export const PUT: APIRoute = async ({ params, request }) => {
 	const originalSlug = params.slug ?? '';
 	const body = await request.json();
-	const post = parseBlogPayload(body);
 
-	if (!isValidSlug(post.slug)) {
+	if (!isPostDocument(body)) {
+		return new Response(JSON.stringify({ error: 'Invalid post document' }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' },
+		});
+	}
+
+	const doc = body as PostDocument;
+
+	if (!isValidSlug(doc.meta.slug)) {
 		return new Response(JSON.stringify({ error: 'Invalid slug' }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' },
@@ -65,31 +67,31 @@ export const PUT: APIRoute = async ({ params, request }) => {
 
 	try {
 		if (originalSlug === 'new') {
-			if (await blogPostExists(post.slug)) {
+			if (await postDocumentExists(doc.meta.slug)) {
 				return new Response(JSON.stringify({ error: 'A blog post with this slug already exists' }), {
 					status: 409,
 					headers: { 'Content-Type': 'application/json' },
 				});
 			}
-			await saveBlogPost(post);
+			await savePostDocument(doc);
 		} else {
-			const existing = await getBlogPost(originalSlug);
+			const existing = await getPostDocument(originalSlug);
 			if (!existing) {
 				return new Response(JSON.stringify({ error: 'Blog post not found' }), {
 					status: 404,
 					headers: { 'Content-Type': 'application/json' },
 				});
 			}
-			if (originalSlug !== post.slug && (await blogPostExists(post.slug))) {
+			if (originalSlug !== doc.meta.slug && (await postDocumentExists(doc.meta.slug))) {
 				return new Response(JSON.stringify({ error: 'A blog post with this slug already exists' }), {
 					status: 409,
 					headers: { 'Content-Type': 'application/json' },
 				});
 			}
-			await saveBlogPost(post, originalSlug);
+			await savePostDocument(doc, originalSlug);
 		}
 
-		return new Response(JSON.stringify({ ok: true, slug: post.slug }), {
+		return new Response(JSON.stringify({ ok: true, slug: doc.meta.slug }), {
 			status: 200,
 			headers: { 'Content-Type': 'application/json' },
 		});

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { RECENT_BLOCKS_LIMIT } from '../../../../lib/blocks/registry';
 
 const FAVORITES_KEY = 'gutenberg-block-favorites';
 const RECENT_KEY = 'gutenberg-block-recent';
@@ -26,7 +27,7 @@ export function useBlockPreferences() {
 
 	const recordRecent = useCallback((type: string) => {
 		setRecent((prev) => {
-			const next = [type, ...prev.filter((t) => t !== type)].slice(0, 8);
+			const next = [type, ...prev.filter((t) => t !== type)].slice(0, RECENT_BLOCKS_LIMIT);
 			localStorage.setItem(RECENT_KEY, JSON.stringify(next));
 			return next;
 		});

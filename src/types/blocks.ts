@@ -28,6 +28,39 @@ export interface PageDocument {
 	blocks: Block[];
 }
 
+export interface PostMeta {
+	title: string;
+	slug: string;
+	seoTitle: string;
+	description: string;
+	published: boolean;
+	draft: boolean;
+	featuredImage: string;
+	author: string;
+	publishDate: string;
+	updatedAt: string;
+	excerpt: string;
+	categories: string[];
+	tags: string[];
+}
+
+export interface PostDocument {
+	meta: PostMeta;
+	blocks: Block[];
+}
+
+export type ContentType = 'page' | 'post';
+
+export type EditorDocument = PageDocument | PostDocument;
+
+export interface InsertContext {
+	parentId: string | null;
+	index: number;
+	replaceBlockId?: string;
+	anchor: DOMRect;
+	query?: string;
+}
+
 export type PreviewDevice = 'phone' | 'tablet' | 'desktop';
 
 export interface BlockDefinition {

@@ -1,7 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { nanoid } from 'nanoid';
-import { createBlock } from '../../../lib/blocks/registry';
-import type { Block, EditorMode } from '../../../types/blocks';
+import type { Block, EditorMode, InsertContext } from '../../../types/blocks';
 import {
 	duplicateBlock,
 	findBlockLocation,
@@ -11,7 +9,7 @@ import {
 	updateBlockInTree,
 } from './utils/blockTree';
 import CanvasBlock from './CanvasBlock';
-import SlashMenu from './SlashMenu';
+import BlockInserterPopover from './BlockInserterPopover';
 
 interface Props {
 	blocks: Block[];
@@ -19,7 +17,10 @@ interface Props {
 	selectedId: string | null;
 	onSelect: (id: string | null) => void;
 	structureMode: EditorMode;
-	onOpenInserter: (afterId: string | null) => void;
+	onInsertBlock: (type: string, context: InsertContext) => void;
+	focusBlockId: string | null;
+	onFocusBlock: (id: string | null) => void;
+	recent: string[];
 	globalBlockOptions: { id: string; name: string }[];
 	dragBlockType: string | null;
 	onDragBlockType: (type: string | null) => void;
@@ -31,14 +32,18 @@ export default function EditorCanvas({
 	selectedId,
 	onSelect,
 	structureMode,
-	onOpenInserter,
+	onInsertBlock,
+	focusBlockId,
+	onFocusBlock,
+	recent,
 	globalBlockOptions,
 	dragBlockType,
 	onDragBlockType,
 }: Props) {
 	const [insertIndicator, setInsertIndicator] = useState<{ parentId: string | null; index: number } | null>(null);
-	const [slash, setSlash] = useState<{ blockId: string; query: string; rect: DOMRect } | null>(null);
-	const canvasRef = useRef<HTMLDivElement>(null);
+	const [popover, setPopover] = useState<InsertContext | null>(null);
+
+	const closePopover = useCallback(() => setPopover(null), []);
 
 	const updateBlock = useCallback(
 		(id: string, block: Block) => onChange(updateBlockInTree(blocks, id, () => block)),
@@ -60,39 +65,17 @@ export default function EditorCanvas({
 			const dup = duplicateBlock(loc.blocks[loc.index]);
 			onChange(insertBlockAt(blocks, loc.parentId, loc.index + 1, dup));
 			onSelect(dup.id);
+			onFocusBlock(dup.id);
 		},
-		[blocks, onChange, onSelect],
+		[blocks, onChange, onFocusBlock, onSelect],
 	);
 
 	const insertBlockType = useCallback(
-		(type: string, parentId: string | null, index: number, replaceId?: string) => {
-			let newBlock: Block;
-			if (type.startsWith('global:')) {
-				const blockId = type.slice(7);
-				newBlock = createBlock('globalBlock', nanoid(8));
-				newBlock.props = { blockId };
-			} else {
-				newBlock = createBlock(type, nanoid(8));
-			}
-
-			let next = blocks;
-			if (replaceId) {
-				const loc = findBlockLocation(blocks, replaceId);
-				if (!loc) return;
-				next = insertBlockAt(
-					removeBlockFromTree(blocks, replaceId),
-					loc.parentId,
-					loc.index,
-					newBlock,
-				);
-			} else {
-				next = insertBlockAt(blocks, parentId, index, newBlock);
-			}
-			onChange(next);
-			onSelect(newBlock.id);
-			return newBlock;
+		(type: string, parentId: string | null, index: number) => {
+			const rect = canvasRef.current?.getBoundingClientRect() ?? new DOMRect(0, 0, 0, 0);
+			onInsertBlock(type, { parentId, index, anchor: rect });
 		},
-		[blocks, onChange, onSelect],
+		[onInsertBlock],
 	);
 
 	const insertAfter = useCallback(
@@ -128,10 +111,10 @@ export default function EditorCanvas({
 		[blocks, dragBlockType, insertBlockType, onChange, onDragBlockType],
 	);
 
-	const handleSlashSelect = (type: string) => {
-		if (!slash) return;
-		insertBlockType(type, null, 0, slash.blockId);
-		setSlash(null);
+	const handlePopoverSelect = (type: string) => {
+		if (!popover) return;
+		onInsertBlock(type, popover);
+		closePopover();
 	};
 
 	const renderBlockList = (blockList: Block[], parentId: string | null = null) => (
@@ -145,7 +128,11 @@ export default function EditorCanvas({
 						<button
 							type="button"
 							className="gb-inserter-plus"
-							onClick={() => onOpenInserter(block.id)}
+							onClick={(e) => {
+								e.stopPropagation();
+								const rect = e.currentTarget.getBoundingClientRect();
+								openPopover(parentId, index, rect);
+							}}
 							title="Add block"
 						>
 							+
@@ -155,14 +142,18 @@ export default function EditorCanvas({
 						block={block}
 						isSelected={selectedId === block.id}
 						structureMode={structureMode}
+						autoFocus={focusBlockId === block.id}
 						onSelect={onSelect}
 						onChange={updateBlock}
 						onRemove={removeBlock}
 						onDuplicate={duplicateBlockById}
-						onInsertAfter={() => onOpenInserter(block.id)}
 						onEnterAfter={insertAfter}
-						onSlash={(id, query, rect) => setSlash({ blockId: id, query, rect })}
-						onSlashClose={() => setSlash(null)}
+						onSlash={(id, query, rect) => {
+							const loc = findBlockLocation(blocks, id);
+							if (!loc) return;
+							openPopover(loc.parentId, loc.index, rect, id, query);
+						}}
+						onSlashClose={closePopover}
 						onDragStart={(id, e) => {
 							e.dataTransfer.setData('text/block-id', id);
 							e.dataTransfer.effectAllowed = 'move';
@@ -182,14 +173,18 @@ export default function EditorCanvas({
 								block={child}
 								isSelected={selectedId === child.id}
 								structureMode={structureMode}
+								autoFocus={focusBlockId === child.id}
 								onSelect={onSelect}
 								onChange={(b) => onChange(updateBlockInTree(blocks, child.id, () => b))}
 								onRemove={removeBlock}
 								onDuplicate={duplicateBlockById}
-								onInsertAfter={() => onOpenInserter(child.id)}
 								onEnterAfter={() => insertAfter(child.id)}
-								onSlash={(id, query, rect) => setSlash({ blockId: id, query, rect })}
-								onSlashClose={() => setSlash(null)}
+								onSlash={(id, query, rect) => {
+									const loc = findBlockLocation(blocks, id);
+									if (!loc) return;
+									openPopover(loc.parentId, loc.index, rect, id, query);
+								}}
+								onSlashClose={closePopover}
 								onDragStart={(id, e) => e.dataTransfer.setData('text/block-id', id)}
 								onDragOver={(id, position, e) => {
 									e.preventDefault();
@@ -208,7 +203,18 @@ export default function EditorCanvas({
 				<div className="gb-insert-indicator" />
 			)}
 			<div className="gb-inserter-between gb-inserter-end">
-				<button type="button" className="gb-inserter-plus" onClick={() => onOpenInserter(null)} title="Add block">+</button>
+				<button
+					type="button"
+					className="gb-inserter-plus"
+					onClick={(e) => {
+						e.stopPropagation();
+						const rect = e.currentTarget.getBoundingClientRect();
+						openPopover(parentId, blockList.length, rect);
+					}}
+					title="Add block"
+				>
+					+
+				</button>
 			</div>
 		</>
 	);
@@ -237,18 +243,29 @@ export default function EditorCanvas({
 				{blocks.length === 0 ? (
 					<div className="gb-canvas-empty">
 						<p>Start writing or type <kbd>/</kbd> to choose a block</p>
-						<button type="button" className="gb-empty-add" onClick={() => onOpenInserter(null)}>+ Add block</button>
+						<button
+							type="button"
+							className="gb-empty-add"
+							onClick={(e) => {
+								const rect = e.currentTarget.getBoundingClientRect();
+								openPopover(null, 0, rect);
+							}}
+						>
+							+ Add block
+						</button>
 					</div>
 				) : (
 					renderBlockList(blocks)
 				)}
 			</div>
-			{slash && (
-				<SlashMenu
-					query={slash.query}
-					position={slash.rect}
-					onSelect={handleSlashSelect}
-					onClose={() => setSlash(null)}
+			{popover && (
+				<BlockInserterPopover
+					query={popover.query ?? ''}
+					position={popover.anchor}
+					recent={recent}
+					onSelect={handlePopoverSelect}
+					onClose={closePopover}
+					autoFocusSearch={!popover.query}
 				/>
 			)}
 		</div>
