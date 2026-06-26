@@ -4,6 +4,7 @@ import {
 	isColumnsBlock,
 	normalizeColumnsBlock,
 } from '../../../lib/blocks/columns';
+import { blockWidthClass, getBlockWidth } from '../../../lib/blocks/layout';
 import type { Block, EditorMode } from '../../../types/blocks';
 
 interface Props {
@@ -26,11 +27,12 @@ export default function ColumnsCanvas({
 	const normalized = normalizeColumnsBlock(block);
 	const count = getColumnsCount(normalized);
 	const layoutStyle = getColumnsLayoutStyle(normalized);
+	const widthClass = blockWidthClass(getBlockWidth(normalized.props.width));
 	const showOutline = isSelected || structureMode === 'structure';
 
 	return (
 		<div
-			className={`gb-columns-layout block-columns block-columns-${count} ${showOutline ? 'is-visible' : ''}`}
+			className={`gb-columns-layout block-columns block-columns-${count} ${widthClass} ${showOutline ? 'is-visible' : ''}`}
 			style={layoutStyle}
 		>
 			{(normalized.children ?? []).map((column, colIndex) => (

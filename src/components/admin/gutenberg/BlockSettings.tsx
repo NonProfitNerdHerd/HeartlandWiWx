@@ -3,6 +3,7 @@ import { getBlockDefinition } from '../../../lib/blocks/registry';
 import { isColumnsBlock } from '../../../lib/blocks/columns';
 import type { Block } from '../../../types/blocks';
 import ColumnsSettings from './ColumnsSettings';
+import HeroSettings from './HeroSettings';
 import SpacingSettings from './SpacingSettings';
 
 const TEXT_BLOCKS = new Set([
@@ -90,22 +91,7 @@ export default function BlockSettings({ block, onChange, globalBlockOptions }: P
 	}
 
 	if (block.type === 'hero' || block.type === 'splitHero' || block.type === 'minimalHero') {
-		return withSpacing(
-			<div className="gb-settings-fields">
-				<label>Title <input value={String(block.props.title ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, title: e.target.value } })} /></label>
-				<label>Subtitle <input value={String(block.props.subtitle ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, subtitle: e.target.value } })} /></label>
-				<label>Background Image <input value={String(block.props.image ?? '')} onChange={(e) => onChange({ ...block, props: { ...block.props, image: e.target.value } })} /></label>
-				<label>Alignment
-					<select value={String(block.props.align ?? 'center')} onChange={(e) => onChange({ ...block, props: { ...block.props, align: e.target.value } })}>
-						<option value="left">Left</option>
-						<option value="center">Center</option>
-						<option value="right">Right</option>
-					</select>
-				</label>
-			</div>,
-			block,
-			onChange,
-		);
+		return <HeroSettings block={block} onChange={onChange} />;
 	}
 
 	if (block.type === 'ctaBanner') {

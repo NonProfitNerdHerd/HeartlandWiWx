@@ -12,6 +12,7 @@ const PROTECTED_API_PREFIXES = [
 	'/api/site-text',
 	'/api/global-blocks',
 	'/api/media',
+	'/api/media/upload',
 	'/api/auth/logout',
 ];
 
