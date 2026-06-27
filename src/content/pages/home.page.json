@@ -10,7 +10,7 @@
     "template": "default",
     "author": "",
     "publishDate": "2026-06-23",
-    "updatedAt": "2026-06-26",
+    "updatedAt": "2026-06-27",
     "menuLabel": "Home",
     "showInMenu": true,
     "menuOrder": 1
@@ -20,17 +20,12 @@
       "id": "S5AFlqGN",
       "type": "hero",
       "props": {
-        "title": "Hero Title",
-        "subtitle": "",
+        "title": "Heartland Chasers",
+        "subtitle": "Strom chasing across Wisconsin, Minnesota, Iowa, Illinois, Indiana and the Dakotas!",
         "image": "",
-        "align": "center"
+        "align": "center",
+        "width": "full"
       }
-    },
-    {
-      "id": "migrated-1",
-      "type": "paragraph",
-      "props": {},
-      "content": "<p>Storm chasing across Wisconsin, Minnesota, Iowa, Illinois, Indiana, and the Dakotas.</p>"
     },
     {
       "id": "CdOAwtoD",
@@ -50,17 +45,21 @@
               "id": "WOZOzrwy",
               "type": "card",
               "props": {
-                "title": "Card"
-              },
-              "content": "<p>About Us</p>"
-            },
-            {
-              "id": "E-JtZKMK",
-              "type": "button",
-              "props": {
-                "label": "About Us",
-                "href": "/about",
-                "variant": "primary"
+                "cardStyle": "title-image-text-button",
+                "title": "About Us",
+                "subtitle": "",
+                "image": "",
+                "text": "HeartlandWiWx follows Ike and Jess as they travel the Midwest documenting severe weather, learning the craft of storm chasing, and sharing the stories behind the storms.",
+                "buttonText": "About Us",
+                "buttonUrl": "/about",
+                "buttonTarget": "same",
+                "imageStyle": "rounded",
+                "titleAlign": "left",
+                "textAlign": "left",
+                "buttonAlign": "left",
+                "padding": 24,
+                "borderRadius": 8,
+                "shadow": "small"
               }
             }
           ]
@@ -74,24 +73,22 @@
               "id": "Ywtxs49t",
               "type": "card",
               "props": {
-                "title": "Card"
-              },
-              "content": "<p>You Tube Stream</p>"
-            },
-            {
-              "id": "kiXO4tEj",
-              "type": "button",
-              "props": {
-                "label": "YouTube Page",
-                "href": "https://www.youtube.com/@heartlandWiWx",
-                "variant": "primary"
+                "cardStyle": "title-image-text-button",
+                "title": "Watch us on YouTube",
+                "subtitle": "",
+                "image": "",
+                "text": "Check out some of our adventures as we chase, or as we do other activities that are part of supporting our community! You never know what we might end up streaming! ",
+                "buttonText": "YouTube Page",
+                "buttonUrl": "https://www.youtube.com/@heartlandWiWx",
+                "buttonTarget": "new",
+                "imageStyle": "rounded",
+                "titleAlign": "left",
+                "textAlign": "left",
+                "buttonAlign": "left",
+                "padding": 24,
+                "borderRadius": 8,
+                "shadow": "small"
               }
-            },
-            {
-              "id": "CdOAwtoD-col-1-3i7w-p",
-              "type": "paragraph",
-              "props": {},
-              "content": "<p></p>"
             }
           ]
         },
@@ -101,18 +98,24 @@
           "props": {},
           "children": [
             {
-              "id": "CdOAwtoD-col-2-kn17-p",
-              "type": "paragraph",
-              "props": {},
-              "content": "<p>Follow us on X!</p>"
-            },
-            {
-              "id": "F2h8yNQC",
-              "type": "button",
+              "id": "nk3Ev7ak",
+              "type": "card",
               "props": {
-                "label": "X (Twitter) Page",
-                "href": "https://x.com/HeartlandWiWx",
-                "variant": "primary"
+                "cardStyle": "title-image-text-button",
+                "title": "Follow us on X!",
+                "subtitle": "",
+                "image": "",
+                "text": "We are always sharing things from the community, and our own content! Check us out to see what we might be up to with the truck!",
+                "buttonText": "X (Twitter) Page",
+                "buttonUrl": "https://x.com/HeartlandWiWx",
+                "buttonTarget": "new",
+                "imageStyle": "rounded",
+                "titleAlign": "left",
+                "textAlign": "left",
+                "buttonAlign": "left",
+                "padding": 24,
+                "borderRadius": 8,
+                "shadow": "small"
               }
             }
           ]
@@ -120,40 +123,12 @@
       ]
     },
     {
-      "id": "migrated-3",
-      "type": "heading",
-      "props": {
-        "level": 2
-      },
-      "content": "<h2>About Us</h2>"
-    },
-    {
-      "id": "migrated-4",
-      "type": "paragraph",
-      "props": {},
-      "content": "<p>Heartland Chasers follows Ike and Jess as they travel the Midwest documenting severe weather, learning the craft of storm chasing, and sharing the stories behind the storms.</p>"
-    },
-    {
-      "id": "migrated-6",
-      "type": "heading",
-      "props": {
-        "level": 2
-      },
-      "content": "<h2>Live Stream</h2><p></p>"
-    },
-    {
-      "id": "migrated-7",
-      "type": "paragraph",
-      "props": {},
-      "content": "<p>When we are chasing, our live stream will appear here.</p>"
-    },
-    {
       "id": "migrated-8",
       "type": "heading",
       "props": {
         "level": 2
       },
-      "content": "<h2>Latest Chase Reports</h2>"
+      "content": "<h2>Latest Chase Reports</h2><p></p>"
     },
     {
       "id": "migrated-9",
