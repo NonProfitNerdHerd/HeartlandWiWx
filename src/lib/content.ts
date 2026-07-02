@@ -1,17 +1,34 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { ADMIN_ONLY_PAGE_SLUGS, BLOG_CONTENT_DIR, BLOG_INDEX_PAGE_SLUG, PAGES_CONTENT_DIR } from './constants';
-import { getAllPageDocumentsForBuild, getPageDocumentForBuild } from './page-document';
-import { renderBlocks } from './blocks/render';
-import { globalBlocksMap, getGlobalBlocksForBuild } from './global-blocks';
 import matter from 'gray-matter';
 import { marked } from 'marked';
+import { ADMIN_ONLY_PAGE_SLUGS, BLOG_CONTENT_DIR, BLOG_INDEX_PAGE_SLUG, PAGES_CONTENT_DIR } from './constants';
+import { getAllPageDocumentsForBuild, getPageDocumentForBuild } from './page-document';
+import { getAllPostDocumentsForBuild } from './blog-document';
+import { renderBlocks } from './blocks/render';
+import { globalBlocksMap, getGlobalBlocksForBuild } from './global-blocks';
+
+marked.setOptions({ gfm: true, breaks: true });
 
 const blogRoot = path.join(process.cwd(), BLOG_CONTENT_DIR);
 const legacyBlogRoot = path.join(process.cwd(), 'content/chase-reports');
 const RESERVED_PAGE_SLUGS = new Set(['home', BLOG_INDEX_PAGE_SLUG]);
 
-marked.setOptions({ gfm: true, breaks: true });
+function postDocToChaseReport(doc: import('../types/blocks').PostDocument, filename: string): ChaseReport {
+	const globalBlocks = globalBlocksMap(getGlobalBlocksForBuild());
+	const html = renderBlocks(doc.blocks, globalBlocks);
+	return {
+		title: doc.meta.title,
+		slug: doc.meta.slug,
+		date: doc.meta.publishDate,
+		excerpt: doc.meta.excerpt,
+		featuredImage: doc.meta.featuredImage,
+		status: doc.meta.published && !doc.meta.draft ? 'published' : 'draft',
+		body: '',
+		html,
+		filename,
+	};
+}
 
 export interface PageView {
 	title: string;
@@ -96,25 +113,34 @@ export function getPageHref(slug: string): string {
 }
 
 export function getAllChaseReports(includeDrafts = false): ChaseReport[] {
-	const blogDir = fs.existsSync(blogRoot) ? blogRoot : legacyBlogRoot;
-	if (!fs.existsSync(blogDir)) return [];
+	const fromJson = getAllPostDocumentsForBuild(includeDrafts).map((doc) =>
+		postDocToChaseReport(doc, doc.meta.slug),
+	);
 
-	return fs
-		.readdirSync(blogDir)
-		.filter((f) => f.endsWith('.md'))
-		.map((file) => {
+	const blogDir = fs.existsSync(blogRoot) ? blogRoot : legacyBlogRoot;
+	const jsonSlugs = new Set(fromJson.map((r) => r.slug));
+	const fromMd: ChaseReport[] = [];
+
+	if (fs.existsSync(blogDir)) {
+		for (const file of fs.readdirSync(blogDir)) {
+			if (!file.endsWith('.md')) continue;
+			const slug = file.replace('.md', '');
+			if (jsonSlugs.has(slug)) continue;
 			const raw = fs.readFileSync(path.join(blogDir, file), 'utf-8');
 			const { data, content } = matter(raw);
 			const fm = data as ChaseReportFrontmatter;
-			const slug = fm.slug || file.replace('.md', '');
-			return {
+			const resolvedSlug = fm.slug || slug;
+			fromMd.push({
 				...fm,
-				slug,
+				slug: resolvedSlug,
 				body: content.trim(),
 				html: marked.parse(content.trim()) as string,
-				filename: file.replace('.md', ''),
-			};
-		})
+				filename: slug,
+			});
+		}
+	}
+
+	return [...fromJson, ...fromMd]
 		.filter((r) => includeDrafts || r.status === 'published')
 		.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }

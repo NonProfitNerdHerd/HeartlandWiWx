@@ -2,11 +2,11 @@
 export const prerender = false;
 
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { listBlogPosts } from '../../../lib/blog';
+import { listPostDocuments } from '../../../lib/blog-document';
 import { getPageDocument } from '../../../lib/page-document';
 import { BLOG_INDEX_PAGE_SLUG } from '../../../lib/content';
 
-const posts = await listBlogPosts();
+const posts = await listPostDocuments();
 const landingPage = await getPageDocument(BLOG_INDEX_PAGE_SLUG);
 ---
 
