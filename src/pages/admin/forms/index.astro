@@ -1,0 +1,32 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import FormBuilder from '../../../components/admin/FormBuilder';
+---
+
+<AdminLayout title="Forms" activeTab="forms">
+	<FormBuilder client:load />
+</AdminLayout>
+
+<style is:global>
+	.forms-admin { max-width: 1200px; }
+	.forms-admin-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+	.forms-admin-layout { display: grid; grid-template-columns: 240px 1fr; gap: 24px; }
+	.forms-admin-list { display: flex; flex-direction: column; gap: 4px; }
+	.forms-admin-list-item { display: flex; align-items: center; gap: 4px; border: 1px solid #333; border-radius: 6px; overflow: hidden; }
+	.forms-admin-list-item.is-active { border-color: #3858e9; }
+	.forms-admin-list-item button { flex: 1; text-align: left; padding: 10px 12px; background: #111; border: none; color: #fff; cursor: pointer; }
+	.forms-admin-list-actions { display: flex; gap: 2px; padding-right: 4px; }
+	.forms-admin-list-actions button { background: transparent; border: none; color: #aaa; cursor: pointer; padding: 4px; }
+	.forms-admin-editor label { display: block; margin-bottom: 12px; }
+	.forms-admin-editor input, .forms-admin-editor textarea, .forms-admin-editor select { width: 100%; }
+	.forms-admin-fields-header { display: flex; justify-content: space-between; align-items: center; margin: 24px 0 12px; }
+	.forms-admin-field-card { border: 1px solid #333; border-radius: 8px; padding: 12px; margin-bottom: 12px; background: #111; }
+	.forms-admin-field-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+	.forms-admin-field-type { font-size: 12px; color: #888; }
+	.forms-admin-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+	@media (max-width: 800px) {
+		.forms-admin-layout { grid-template-columns: 1fr; }
+		.forms-admin-field-grid { grid-template-columns: 1fr; }
+	}
+</style>

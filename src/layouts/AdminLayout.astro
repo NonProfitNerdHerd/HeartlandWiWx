@@ -1,7 +1,7 @@
 ---
 interface Props {
 	title: string;
-	activeTab?: 'pages' | 'blog' | 'gallery' | 'appearance' | 'navigation' | 'site-text' | 'global-blocks' | 'media';
+	activeTab?: 'pages' | 'blog' | 'gallery' | 'appearance' | 'navigation' | 'site-text' | 'global-blocks' | 'media' | 'forms' | 'form-submissions';
 	wide?: boolean;
 }
 
@@ -35,6 +35,8 @@ const currentPath = Astro.url.pathname;
 				<a href="/admin/blog" class:list={{ active: activeTab === 'blog' || currentPath.startsWith('/admin/blog') }}>Blog Posts</a>
 				<a href="/admin/gallery" class:list={{ active: activeTab === 'gallery' }}>Gallery</a>
 				<a href="/admin/media" class:list={{ active: activeTab === 'media' }}>Media</a>
+				<a href="/admin/forms" class:list={{ active: activeTab === 'forms' }}>Forms</a>
+				<a href="/admin/form-submissions" class:list={{ active: activeTab === 'form-submissions' }}>Form Submissions</a>
 				<span class="admin-tab-group-label">Site</span>
 				<a href="/admin/appearance" class:list={{ active: activeTab === 'appearance' }}>Appearance</a>
 				<a href="/admin/navigation" class:list={{ active: activeTab === 'navigation' }}>Navigation</a>

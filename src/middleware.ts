@@ -12,11 +12,19 @@ const PROTECTED_API_PREFIXES = [
 	'/api/site-text',
 	'/api/global-blocks',
 	'/api/media',
+	'/api/media/upload',
+	'/api/forms',
+	'/api/form-submissions',
 	'/api/auth/logout',
 ];
 
 export const onRequest = defineMiddleware(async (context, next) => {
 	const { pathname } = context.url;
+
+	if (pathname === '/api/form-submissions' && context.request.method === 'POST') {
+		return next();
+	}
+
 	const isAdminRoute = pathname.startsWith('/admin');
 	const isAdminApi = PROTECTED_API_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 

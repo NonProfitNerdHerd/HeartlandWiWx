@@ -214,10 +214,189 @@ main a.button {
 }
 
 .block-hero {
+	display: flex;
+	min-height: 280px;
 	padding: 4rem 1.5rem;
 	background-size: cover;
 	background-position: center;
+}
+
+.block-hero-inner {
+	width: 100%;
+}
+
+.block-hero-align-left { justify-content: flex-start; text-align: left; }
+.block-hero-align-center { justify-content: center; text-align: center; }
+.block-hero-align-right { justify-content: flex-end; text-align: right; }
+
+.block-hero-valign-top { align-items: flex-start; }
+.block-hero-valign-middle { align-items: center; }
+.block-hero-valign-bottom { align-items: flex-end; }
+
+.block-hero.splitHero {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0;
+	padding: 0;
+	min-height: 320px;
+	background-image: none !important;
+}
+
+.block-hero-split-image {
+	min-height: 240px;
+	background-size: cover;
+	background-position: center;
+}
+
+.cms-content .block-width-wide {
+	width: calc(100% + 160px);
+	max-width: 1200px;
+	margin-left: -80px;
+	margin-right: -80px;
+}
+
+.cms-content .block-width-full {
+	width: 100vw;
+	max-width: 100vw;
+	margin-left: calc(50% - 50vw);
+	margin-right: calc(50% - 50vw);
+}
+
+.block-button-wrap {
+	display: flex;
+	width: 100%;
+}
+
+.block-button-align-left { justify-content: flex-start; }
+.block-button-align-center { justify-content: center; }
+.block-button-align-right { justify-content: flex-end; }
+
+.block-card {
+	background: var(--color-surface, #111);
+	border: 1px solid #333;
+	margin: var(--space-block, 1.5rem) 0;
+	overflow: hidden;
+}
+
+.block-card-shadow-none { box-shadow: none; }
+.block-card-shadow-small { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); }
+.block-card-shadow-medium { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); }
+.block-card-shadow-large { box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35); }
+
+.block-card-image img {
+	display: block;
+	width: 100%;
+	height: auto;
+	object-fit: cover;
+}
+
+.block-card-image-rounded img { border-radius: 8px; }
+.block-card-image-circle {
+	max-width: 160px;
+	margin: 0 auto;
+}
+.block-card-image-circle img { border-radius: 50%; aspect-ratio: 1; object-fit: cover; }
+
+.block-card-split {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+	align-items: center;
+}
+
+.block-card-centered,
+.block-card-circle-layout {
 	text-align: center;
+}
+
+.block-card-titles-align-left { text-align: left; }
+.block-card-titles-align-center { text-align: center; }
+.block-card-titles-align-right { text-align: right; }
+
+.block-card-text-align-left { text-align: left; }
+.block-card-text-align-center { text-align: center; }
+.block-card-text-align-right { text-align: right; }
+
+.block-card-button { margin-top: 12px; display: flex; }
+.block-card-button-align-left { justify-content: flex-start; }
+.block-card-button-align-center { justify-content: center; }
+.block-card-button-align-right { justify-content: flex-end; }
+.block-card-button.is-full { display: block; }
+.block-card-btn-full { display: block; width: 100%; text-align: center; }
+
+.block-card-hero-layout {
+	position: relative;
+	min-height: 280px;
+}
+.block-card-hero-bg {
+	position: absolute;
+	inset: 0;
+	background-size: cover;
+	background-position: center;
+	opacity: 0.45;
+}
+.block-card-hero-body {
+	position: relative;
+	z-index: 1;
+	padding: 2rem;
+}
+
+.block-card-minimal {
+	border: none;
+	background: transparent;
+	box-shadow: none !important;
+}
+
+.cms-form-wrap {
+	margin: 1.5rem 0;
+}
+.cms-form {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	max-width: 560px;
+}
+.cms-form-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+.cms-form-label {
+	font-weight: 600;
+	font-size: 14px;
+}
+.cms-form-field input,
+.cms-form-field textarea,
+.cms-form-field select {
+	padding: 10px 12px;
+	border: 1px solid #444;
+	border-radius: 6px;
+	background: #111;
+	color: #fff;
+	font-size: 16px;
+}
+.cms-form-help {
+	font-size: 13px;
+	color: #94a3b8;
+}
+.cms-form-choice {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 15px;
+}
+.cms-form-feedback {
+	margin-top: 12px;
+	padding: 12px;
+	border-radius: 6px;
+}
+.cms-form-feedback.is-success {
+	background: rgba(34, 197, 94, 0.15);
+	color: #86efac;
+}
+.cms-form-feedback.is-error {
+	background: rgba(239, 68, 68, 0.15);
+	color: #fca5a5;
 }
 
 .block-cta {

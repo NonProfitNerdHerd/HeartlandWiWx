@@ -1,0 +1,26 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import FormSubmissionsAdmin from '../../../components/admin/FormSubmissionsAdmin';
+---
+
+<AdminLayout title="Form Submissions" activeTab="form-submissions">
+	<FormSubmissionsAdmin client:load />
+</AdminLayout>
+
+<style is:global>
+	.submissions-admin { max-width: 1200px; }
+	.submissions-filters { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; align-items: flex-end; }
+	.submissions-filters label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+	.submissions-admin-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+	.submission-detail { border: 1px solid #333; border-radius: 8px; padding: 16px; background: #111; height: fit-content; }
+	.submission-values { margin: 16px 0; }
+	.submission-values dt { font-weight: 600; margin-top: 8px; color: #94a3b8; font-size: 12px; text-transform: uppercase; }
+	.submission-values dd { margin: 4px 0 0; }
+	.submission-status.is-unread { color: #fbbf24; }
+	.submission-status.is-read { color: #94a3b8; }
+	tr.is-selected { background: rgba(56, 88, 233, 0.15); }
+	@media (max-width: 900px) {
+		.submissions-admin-layout { grid-template-columns: 1fr; }
+	}
+</style>

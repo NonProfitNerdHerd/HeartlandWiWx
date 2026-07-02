@@ -18,9 +18,11 @@ const globalBlockOptions = (globalBlocks.config?.blocks ?? []).map((b) => ({ id:
 ---
 
 <AdminLayout title={`Edit ${page.doc.meta.title}`} activeTab="pages" wide>
-	<PageEditor client:only="react" initialDocument={page.doc} originalSlug={slug} globalBlockOptions={globalBlockOptions} />
+	<PageEditor client:only="react" initialDocument={page.doc} originalSlug={slug} globalBlockOptions={globalBlockOptions}>
+		<div slot="fallback" class="gb-editor-loading">Loading editor…</div>
+	</PageEditor>
 </AdminLayout>
 
 <style is:global>
-	@import '../../../styles/builder.css';
+	@import '../../../styles/gutenberg.css';
 </style>
